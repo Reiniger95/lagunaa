@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <style>
+    .login-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
+      background-color: #f0f0f0;
+    }
+
+    .login-box {
+      padding: 40px;
+      border: 2px solid #0056b3;
+      border-radius: 10px;
+      background-color: #fff;
+      text-align: center;
+      width: 300px;
+    }
+
+    .login-box h1 {
+      margin-bottom: 20px;
+      color: #0056b3;
+    }
+
+    .login-box input[type="email"],
+    .login-box input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .login-box button {
+      background-color: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .login-box button:hover {
+      background-color: #004494;
+    }
+
+    .login-box .links {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .login-box .links a {
+      color: #0056b3;
+      text-decoration: none;
+      margin-top: 5px;
+    }
+
+    .login-box .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <div class="login-container">
+    <div class="login-box">
+      <h1>Login</h1>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Entrar</button>
+      </form>
+      <div class="links">
+        <span>Não possui conta? <a href="{% url 'register' %}">Registrar</a></span>
+        <span>-</span>
+        <span>Esqueceu sua senha? <a href="{% url 'password_reset' %}">Recuperar</a></span>
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</body>
+
+</html>

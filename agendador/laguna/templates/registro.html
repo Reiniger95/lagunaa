@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro</title>
+  <style>
+    .register-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
+      background-color: #f0f0f0;
+    }
+
+    .register-box {
+      padding: 40px;
+      border: 2px solid #0056b3;
+      border-radius: 10px;
+      background-color: #fff;
+      text-align: center;
+      width: 300px;
+    }
+
+    .register-box h1 {
+      margin-bottom: 20px;
+      color: #0056b3;
+    }
+
+    .register-box input[type="text"],
+    .register-box input[type="email"],
+    .register-box input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .register-box button {
+      background-color: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .register-box button:hover {
+      background-color: #004494;
+    }
+
+    .register-box .links {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .register-box .links a {
+      color: #0056b3;
+      text-decoration: none;
+      margin-top: 5px;
+    }
+
+    .register-box .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <div class="register-container">
+    <div class="register-box">
+      <h1>Registro</h1>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Registrar</button>
+      </form>
+      <div class="links">
+        Já possui conta? <a href="{% url 'login' %}">Login</a>
+      </div>
+    </div>
+  </div>
+  {% include 'footer.html' %}
+</body>
+
+</html>

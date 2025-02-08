@@ -1,0 +1,65 @@
+from django.contrib import admin
+from .models import Court, Reservation, RecurringReservation
+from datetime import date, timedelta
+
+class CustomAdminSite(admin.AdminSite):
+    site_header = 'Administração do Sistema'
+    site_title = 'Administração'
+    index_title = 'Painel de Administração'
+
+    def get_app_list(self, request):
+        app_list = super().get_app_list(request)
+        for app in app_list:
+            for model in app['models']:
+                if model['object_name'] == 'Court':
+                    model['name'] = 'Quadras'
+                elif model['object_name'] == 'Reservation':
+                    model['name'] = 'Reservas'
+                elif model['object_name'] == 'RecurringReservation':
+                    model['name'] = 'Reservas Recorrentes'
+        return app_list
+
+custom_admin_site = CustomAdminSite(name='custom_admin')
+@admin.register(Court)
+class CourtAdmin(admin.ModelAdmin):
+    list_display = ('name', 'location')
+
+@admin.register(Reservation)
+class ReservationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'court', 'date', 'time_slot')
+# Register your models here.
+
+@admin.register(RecurringReservation)
+class RecurringReservationAdmin(admin.ModelAdmin):
+    list_display = ['user', 'court', 'day_of_week', 'time_slot', 'name']
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Após salvar o novo registro, cria as reservas para os próximos 30 dias
+        hoje = date.today()
+        fim = hoje + timedelta(days=30)
+
+        dia_atual = hoje
+        while dia_atual <= fim:
+            if dia_atual.weekday() == obj.day_of_week:
+                # Evita duplicar caso já exista
+                ja_existe = Reservation.objects.filter(
+                    user=obj.user,
+                    court=obj.court,
+                    date=dia_atual,
+                    time_slot=obj.time_slot
+                ).exists()
+                if not ja_existe:
+                    Reservation.objects.create(
+                        user=obj.user,
+                        court=obj.court,
+                        date=dia_atual,
+                        time_slot=obj.time_slot,
+                        name=obj.name
+                    )
+            dia_atual += timedelta(days=1)
+
+admin.site = custom_admin_site
+admin.site.register(Court, CourtAdmin)
+admin.site.register(Reservation, ReservationAdmin)
+admin.site.register(RecurringReservation, RecurringReservationAdmin)

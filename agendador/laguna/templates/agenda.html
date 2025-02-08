@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Agenda</title>
+  <style>
+  body {
+      background-color: #f0f0f0;
+      font-family: 'Century Gothic', Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 80%;
+      margin: 0 auto;
+      padding-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .title {
+      text-align: center;
+      font-family: 'Century Gothic', Arial, sans-serif;
+      font-size: 24px;
+      color: #0056b3;
+      margin-bottom: 20px;
+    }
+
+    .reservations {
+      width: 100%;
+      max-width: 800px;
+      background-color: #fff;
+      border: 2px solid #0056b3;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .reservation {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reservation:last-child {
+      border-bottom: none;
+    }
+
+    .reservation h3 {
+      margin: 0;
+      font-size: 20px;
+      color: #0056b3;
+    }
+
+    .reservation p {
+      margin: 5px 0;
+      color: #666;
+    }
+
+    .button {
+      background-color: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: background-color 0.3s, color 0.3s;
+      align-self: flex-end;
+      margin-bottom: 60px;
+    }
+
+    .button:hover {
+      background-color: #004494;
+    }
+
+    .delete-button {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .delete-button:hover {
+      background-color: #ff1a1a;
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <div class="container">
+    <h1 class="title">Minhas Reservas</h1>
+    <div class="reservations">
+      {% if reservations %}
+      {% for reservation in reservations %}
+      <div class="reservation">
+        <div>
+          <h3>{{ reservation.court.name }}</h3>
+          <p>Data: {{ reservation.date }}</p>
+          <p>Horário: {{ reservation.time_slot }}</p>
+        </div>
+        {% if reservation.can_delete %}
+        <form method="post" action="{% url 'delete_reservation' reservation.id %}">
+          {% csrf_token %}
+          <button type="submit" class="delete-button">Excluir</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <p>Você não possui reservas.</p>
+      {% endif %}
+    </div>
+    <a href="{% url 'home' %}" class="button">Voltar</a>
+  </div>
+  {% include 'footer.html' %}
+</body>
+
+</html>

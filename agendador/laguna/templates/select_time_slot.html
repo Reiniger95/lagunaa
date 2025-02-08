@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <title>Selecione o Horário</title>
+  <style>
+    .time-slots {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      /* Espaçamento entre as divs */
+    }
+
+    .time-slot {
+      margin: 5px;
+      padding: 15px;
+      border: 2px solid #0056b3;
+      /* Borda azul */
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      /* Tamanho do texto */
+      text-align: center;
+      width: 100px;
+      /* Largura fixa para as divs */
+    }
+
+    .time-slot.unavailable {
+      background-color: #ffcccc;
+      cursor: not-allowed;
+    }
+
+    .time-slot input {
+      display: none;
+    }
+
+    .time-slot label {
+      display: block;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+     .button {
+      background-color: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: background-color 0.3s, color 0.3s;
+      align-self: flex-end; /* Alinhar à direita */
+    }
+
+    .button:hover {
+      background-color: #004494;
+    }
+     .submit-button {
+      background-color: #0056b3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+      margin-top: 20px;
+      align-self: center; /* Centralizar o botão */
+    }
+    .time-slot.selected {
+      background-color: #007bff;
+      color: #fff;
+    }
+ .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .title {
+      text-align: center;
+      font-family: 'Century Gothic', Arial, sans-serif;
+      font-size: 24px;
+      color: #0056b3;
+    }
+    @media (max-width: 768px) {
+      .time-slot {
+        width: calc(25% - 10px);
+        /* 4 colunas com espaçamento */
+        font-size: 18px;
+        /* Tamanho do texto ajustado para dispositivos móveis */
+      }
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const timeSlots = document.querySelectorAll('.time-slot');
+      timeSlots.forEach(slot => {
+        slot.addEventListener('click', function () {
+          timeSlots.forEach(s => s.classList.remove('selected'));
+          this.classList.add('selected');
+          this.querySelector('input').checked = true;
+        });
+      });
+    });
+  </script>
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <h1 class="title">Selecione o Horário</h1>
+  <form method="post">
+    {% csrf_token %}
+    <div class="time-slots">
+      {% for time, available in available_times %}
+      <div class="time-slot {% if not available %}unavailable{% endif %}">
+        <label>
+          <input type="radio" name="time_slot" value="{{ time }}" {% if not available %}disabled{% endif %}>
+          {{ time }}
+        </label>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="button-container">
+      <button type="submit" class="button">Próximo</button>
+      <a href="javascript:history.back()" class="button">Voltar</a>
+    </div>
+  </form>
+  {% include 'footer.html' %}
+</body>
+
+</html>

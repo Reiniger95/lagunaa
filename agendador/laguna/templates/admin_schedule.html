@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Schedule</title>
+  {% load static %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .datepicker-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      background-color: #f4f4f4;
+    }
+
+    .tab.active {
+      background-color: white;
+      border-top: 2px solid #4CAF50;
+    }
+
+    .tab-content {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 20px;
+      background-color: white;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    .reserved {
+      background-color: #ffcccc;
+    }
+
+    form {
+      display: inline;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    input[type="text"] {
+      padding: 5px;
+      width: 150px;
+    }
+  </style>
+</head>
+
+<body>
+    {% include 'header.html' %}
+  <h1>Admin Schedule - {{ date }}</h1>
+
+  <div class="datepicker-container">
+    <form method="get" action="">
+      <input type="text" id="datepicker" name="date" value="{{ date }}">
+      <button type="submit">Selecionar Data</button>
+    </form>
+    <button onclick="location.reload()">Atualizar</button>
+  </div>
+
+  {% if error_message %}
+  <p class="error">{{ error_message }}</p>
+  {% endif %}
+
+  <div class="tabs">
+    <div class="tab active" data-tab="tab-1">Quadras</div>
+    <div class="tab" data-tab="tab-2">Todas as Reservas</div>
+  </div>
+
+  <!-- ABA 1: Tabela de quadras para o dia selecionado -->
+  <div id="tab-1" class="tab-content active">
+    <table>
+      <thead>
+        <tr>
+          <th>Hora</th>
+          {% for court in courts %}
+          <th>{{ court.name }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in schedule_rows %}
+        <tr>
+          <td>{{ row.hour }}:00</td>
+          {% for slot in row.slots %}
+          <td class="{% if slot.reservation %}reserved{% endif %}">
+            {% if slot.reservation %}
+            {{ slot.reservation.name|default:slot.reservation.user.email }}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="court" value="{{ slot.court.name }}">
+              <input type="hidden" name="time_slot" value="{{ row.hour }}:00">
+              <input type="hidden" name="action" value="delete">
+              <button type="submit">Excluir</button>
+            </form>
+            {% else %}
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="court" value="{{ slot.court.name }}">
+              <input type="hidden" name="time_slot" value="{{ row.hour }}:00">
+              <input type="text" name="name" placeholder="Nome ou Lembrete">
+              <input type="hidden" name="action" value="create">
+              <button type="submit">Marcar</button>
+            </form>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ABA 2: Lista de todas as reservas -->
+  <div id="tab-2" class="tab-content">
+    <table>
+      <thead>
+        <tr>
+          <th>Data/Hora</th>
+          <th>Email</th>
+          <th>Telefone</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reservation in all_reservations %}
+        <tr>
+          <td>{{ reservation.date }} {{ reservation.time_slot }}</td>
+          <td>{{ reservation.user.email }}</td>
+            <td>{{ reservation.user.phone }}</td>
+          
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script>
+    flatpickr("#datepicker", {
+      dateFormat: "Y-m-d",
+      defaultDate: "{{ date }}",
+      minDate: "today",
+      maxDate: new Date().fp_incr(30)
+    });
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+      });
+    });
+     setInterval(function () {
+        location.reload();
+      }, 120000);
+  </script>
+</body>
+
+</html>

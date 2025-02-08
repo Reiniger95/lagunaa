@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
+  <style>
+    body {
+      font-family: 'Century Gothic', Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 80%;
+      margin: 0 auto;
+      height: 80vh;
+    }
+
+    .box {
+      width: 100%;
+      max-width: 400px;
+      margin: 10px;
+      padding: 40px;
+      text-align: center;
+      border: 2px solid #0056b3;
+      border-radius: 10px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      font-size: 24px;
+      color: #0056b3;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .box:hover {
+      background-color: #0056b3;
+      color: #ffeb3b;
+    }
+
+    .box .small-text {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .title {
+      text-align: center;
+      font-family: 'Century Gothic', Arial, sans-serif;
+      font-size: 24px;
+      color: #0056b3;
+      margin-bottom: 20px;
+    }
+
+    .logout {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 16px;
+      margin-top: 20px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .logout:hover {
+      background-color: #ff1a1a;
+    }
+  </style>
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <div class="container">
+    <h1 class="title">Bem-vindo, {{ user.email }}</h1>
+    <a href="{% url 'select_date' %}" class="box">Reservar Quadra</a>
+    <a href="{% url 'agenda' %}" class="box">
+      Suas reservas
+    </a>
+    <a href="{% url 'logout' %}" class="logout">Sair</a>
+  </div>
+  {% include 'footer.html' %}
+</body>
+
+</html>
