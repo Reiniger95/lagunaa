@@ -13,9 +13,7 @@ import os
 import environ
 from pathlib import Path
 # Inicialize o django-environ
-env = environ.Env(
-    DEBUG=(bool, False)
-)
+
 
 # Leia o arquivo .env
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
