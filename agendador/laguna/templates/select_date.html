@@ -7,13 +7,29 @@
   {% load static %}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
+  body {
+      font-family: 'Century Gothic', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 90%;
+      margin: 0 auto;
+      height: 80vh;
+    }
+
     /* Estilizar o calendário */
     .flatpickr-calendar {
       background-color: #f0f0f0;
       /* Cor de fundo */
       border: 2px solid #ccc;
       /* Borda */
-      transform: scale(1.5);
+      transform: scale(2);
       /* Aumentar o tamanho do datepicker */
       transform-origin: top center;
       /* Centralizar a transformação */
@@ -65,23 +81,27 @@
       width: 100%;
     }
 
- .submit-button {
+    .submit-button {
       background-color: #0056b3;
       font-family: 'Century Gothic', Arial, sans-serif;
       color: white;
       border: none;
       padding: 10px 20px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 30px;
       border-radius: 5px;
       margin-top: 20px;
-      align-self: center; /* Centralizar o botão */
+      flex: 1;
+      /* Permitir que o botão cresça */
+      margin-right: 10px;
+      /* Espaçamento entre os botões */
     }
 
     .submit-button:hover {
       background-color: #004494;
     }
-  .button {
+
+    .button {
       background-color: #0056b3;
       color: white;
       padding: 10px 20px;
@@ -89,10 +109,13 @@
       border-radius: 5px;
       cursor: pointer;
       text-decoration: none;
-      font-size: 16px;
+      font-size: 30px;
       margin-top: 20px;
       transition: background-color 0.3s, color 0.3s;
-      align-self: flex-end; /* Alinhar à direita */
+      flex: 1;
+      /* Permitir que o botão cresça */
+      margin-left: 10px;
+      /* Espaçamento entre os botões */
     }
 
     .button:hover {
@@ -102,13 +125,18 @@
     .title {
       text-align: center;
       font-family: 'Century Gothic', Arial, sans-serif;
-      font-size: 24px;
+      font-size: 32px;
       color: #0056b3;
     }
-.button-container {
-        margin-top: 200px;
-        /* Ajuste para dispositivos móveis */
-      }
+
+    .button-container {
+      display: flex;
+      justify-content: space-between;
+      width: 80%;
+      margin-top: 350px;
+      /* Ajuste para dispositivos móveis */
+    }
+
     @media (max-width: 768px) {
       .flatpickr-calendar {
         width: 100%;
@@ -119,7 +147,8 @@
       }
 
       .button-container {
-        margin-top: 20px;
+        width: 100%;
+        margin-top: 50px;
         /* Ajuste para dispositivos móveis */
       }
     }
@@ -135,23 +164,28 @@
         maxDate: new Date().fp_incr(30), // 30 days from now
         inline: true
       });
+         const backButton = document.querySelector('.back-button');
+      backButton.addEventListener('click', function () {
+        history.back();
+      });
     });
   </script>
 </head>
 
 <body>
   {% include 'header.html' %}
-  <h1 class="title">Selecione a Data</h1>
-  <div class="datepicker-container">
-    <form method="post">
-      {% csrf_token %}
-      {{ form.as_p }}
-          <div class="button-container">
-      <button type="submit" class="submit-button">Próximo</button>
-          <a href="javascript:history.back()" class="button">Voltar</a>
-    </form>
-  </div>
-    
+  <div class="container">
+    <h1 class="title">Selecione a Data</h1>
+    <div class="datepicker-container">
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+      </div>
+        <div class="button-container">
+          <button type="submit" class="submit-button">Próximo</button>
+          <button type="button" class="button back-button">Voltar</button>
+        </div>
+      </form>
   </div>
   {% include 'footer.html' %}
 </body>

@@ -24,18 +24,23 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
+      width: 100%;
       margin-bottom: 20px;
     }
 
     .court {
-      margin: 5px;
-      padding: 15px;
-      border: 2px solid #0056b3;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 18px;
+       width: 100%;
+      max-width: 400px;
+      margin: 10px;
+      padding: 40px;
       text-align: center;
-      width: 150px;
+      border: 2px solid #0056b3;
+      border-radius: 10px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      font-size: 24px;
+      color: #0056b3;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .court.unavailable {
@@ -82,18 +87,28 @@
       background-color: #004494;
     }
 
-    .submit-button {
+ .button {
       background-color: #0056b3;
-      font-family: 'Century Gothic', Arial, sans-serif;
       color: white;
-      border: none;
       padding: 10px 20px;
-      cursor: pointer;
-      font-size: 16px;
+      border: none;
       border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 30px;
+      margin-top: 20px;
       transition: background-color 0.3s, color 0.3s;
+      flex: 1;
+      /* Permitir que o botão cresça */
+      margin-left: 10px;
+      /* Espaçamento entre os botões */
     }
-
+        .button-container {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 50px;
+      /* Ajuste para dispositivos móveis */
+    }
     .submit-button:hover {
       background-color: #004494;
     }
@@ -101,7 +116,7 @@
     .title {
       text-align: center;
       font-family: 'Century Gothic', Arial, sans-serif;
-      font-size: 24px;
+      font-size: 42px;
       color: #0056b3;
       margin-bottom: 20px;
     }
@@ -125,6 +140,10 @@
           }
         });
       });
+        const backButton = document.querySelector('.back-button');
+      backButton.addEventListener('click', function () {
+        history.back();
+      });
     });
   </script>
 </head>
@@ -144,10 +163,10 @@
         </div>
         {% endfor %}
       </div>
-      <div class="button-container">
-        <button type="submit" class="submit-button">Reservar</button>
-        <a href="javascript:history.back()" class="button">Voltar</a>
-      </div>
+    <div class="button-container">
+      <button type="submit" class="button">Próximo</button>
+      <button type="button" class="button back-button">Voltar</button>
+    </div>
     </form>
   </div>
   {% include 'footer.html' %}
