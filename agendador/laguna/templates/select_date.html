@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Selecionar Data</title>
   {% load static %}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -91,16 +92,16 @@
       font-size: 30px;
       border-radius: 5px;
       margin-top: 20px;
+      margin-left: 10px;
       flex: 1;
       /* Permitir que o botão cresça */
-      margin-right: 10px;
       /* Espaçamento entre os botões */
     }
-
+    
     .submit-button:hover {
       background-color: #004494;
     }
-
+    
     .button {
       background-color: #0056b3;
       color: white;
@@ -113,8 +114,8 @@
       margin-top: 20px;
       transition: background-color 0.3s, color 0.3s;
       flex: 1;
+      margin-right: 10px;
       /* Permitir que o botão cresça */
-      margin-left: 10px;
       /* Espaçamento entre os botões */
     }
 
@@ -182,8 +183,8 @@
         {{ form.as_p }}
       </div>
         <div class="button-container">
-          <button type="submit" class="submit-button">Próximo</button>
           <button type="button" class="button back-button">Voltar</button>
+          <button type="submit" class="submit-button">Próximo</button>
         </div>
       </form>
   </div>

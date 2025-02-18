@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Court, Reservation, RecurringReservation
+from django.contrib.auth.admin import UserAdmin
+from .models import Court, Reservation, RecurringReservation, CustomUser
 from datetime import date, timedelta
 
 class CustomAdminSite(admin.AdminSite):
@@ -17,6 +18,8 @@ class CustomAdminSite(admin.AdminSite):
                     model['name'] = 'Reservas'
                 elif model['object_name'] == 'RecurringReservation':
                     model['name'] = 'Reservas Recorrentes'
+                elif model['object_name'] == 'CustomUser':
+                    model['name'] = 'Usuários'
         return app_list
 
 custom_admin_site = CustomAdminSite(name='custom_admin')
@@ -58,8 +61,27 @@ class RecurringReservationAdmin(admin.ModelAdmin):
                         name=obj.name
                     )
             dia_atual += timedelta(days=1)
-
+            
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    list_display = ('email', 'phone', 'full_name', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active')
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Informações Pessoais', {'fields': ('phone', 'full_name')}),
+        ('Permissões', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Datas Importantes', {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'phone', 'full_name', 'password1', 'password2', 'is_staff', 'is_active')}
+        ),
+    )
+    search_fields = ('email', 'phone', 'full_name')
+    ordering = ('email',)
 admin.site = custom_admin_site
 admin.site.register(Court, CourtAdmin)
 admin.site.register(Reservation, ReservationAdmin)
 admin.site.register(RecurringReservation, RecurringReservationAdmin)
+admin.site.register(CustomUser, CustomUserAdmin)

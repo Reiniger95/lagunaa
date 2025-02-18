@@ -76,7 +76,7 @@
 <body>
   {% include 'header.html' %}
   <div class="container">
-    <h1 class="title">Bem-vindo, {{ user.email }}</h1>
+    <h1 class="title">Bem-vindo, {{ user.full_name }}</h1>
     <a href="{% url 'select_date' %}" class="box">Reservar Quadra</a>
     <a href="{% url 'agenda' %}" class="box">
       Suas reservas

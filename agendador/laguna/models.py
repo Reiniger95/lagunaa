@@ -38,23 +38,24 @@ class Reservation(models.Model):
         return f"{self.user.email} - {self.court.name} - {self.date} {self.time_slot}"
     
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, phone, password=None, **extra_fields):
+    def create_user(self, email, phone, full_name=None, password=None, **extra_fields):
         if not email:
             raise ValueError('Email is required')
         email = self.normalize_email(email)
-        user = self.model(email=email, phone=phone, **extra_fields)
+        user = self.model(email=email, phone=phone, full_name=full_name, **extra_fields)
         user.set_password(password)
         user.save()
         return user
 
-    def create_superuser(self, email, phone, password=None, **extra_fields):
+    def create_superuser(self, email, phone,full_name=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, phone, password, **extra_fields)
+        return self.create_user(email, phone, full_name, password, **extra_fields)
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20)
+    full_name = models.CharField(max_length=255, blank=True, null=True)  # Adicionando o campo full_name
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 

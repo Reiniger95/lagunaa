@@ -20,10 +20,11 @@ class RegistrationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ['email', 'phone', 'password1', 'password2']
+        fields = ['email', 'phone', 'full_name', 'password1', 'password2']
         labels = {
             'email': 'Email',
             'phone': 'Telefone',
+            'full_name': 'Nome Completo',
         }
 
 class LoginForm(forms.Form):

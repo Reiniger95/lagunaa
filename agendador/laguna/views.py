@@ -102,7 +102,9 @@ def select_court_view(request):
 
 @login_required
 def agenda_view(request):
-    reservations = Reservation.objects.filter(user=request.user)
+    today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
+    reservations = Reservation.objects.filter(date__gte=yesterday, user=request.user).order_by('date', 'time_slot')
     for reservation in reservations:
         reservation.can_delete = (reservation.date - timezone.now().date()).days > 1
     return render(request, 'agenda.html', {'reservations': reservations})

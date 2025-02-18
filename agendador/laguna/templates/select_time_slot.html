@@ -4,6 +4,7 @@
 <head>
   {% load static %}
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Selecione o Horário</title>
   <style>
     body {
@@ -95,22 +96,11 @@
      .title {
       text-align: center;
       font-family: 'Century Gothic', Arial, sans-serif;
-      font-size: 42px;
+      font-size: 32px;
       color: #0056b3;
     }
 
-    @media (max-width: 768px) {
-      .time-slot {
-        flex: 1 1 calc(50% - 10px);
-        font-size: 16px;
-      }
-        .button-container {
-      display: flex;
-      justify-content: space-between;
-      width: 80%;
-      /* Ajuste para dispositivos móveis */
-    }
-
+    
 
       .button {
       background-color: #0056b3;
@@ -128,14 +118,8 @@
       margin-left: 10px;
       /* Espaçamento entre os botões */
     }
-    }
 
-    @media (max-width: 480px) {
-      .time-slot {
-        flex: 1 1 calc(100% - 10px);
-        font-size: 14px;
-      }
-    }
+   
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -172,8 +156,8 @@
         {% endfor %}
       </div>
       <div class="button-container">
+        <button type="button" class="button back-button">Voltar</button>
         <button type="submit" class="button">Próximo</button>
-      <button type="button" class="button back-button">Voltar</button>
       </div>
     </form>
   </div>
