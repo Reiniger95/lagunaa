@@ -2,7 +2,7 @@
 <html lang="pt">
 
 <head>
-   {% load static %}
+  {% load static %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agenda</title>
@@ -39,8 +39,10 @@
       border-radius: 10px;
       padding: 20px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-height: 500px; /* Altura máxima para exibir 6 reservas */
-      overflow-y: auto; /* Adicionar rolagem vertical */
+      max-height: 500px;
+      /* Altura máxima para exibir 6 reservas */
+      overflow-y: auto;
+      /* Adicionar rolagem vertical */
     }
 
     .reservation {
@@ -109,8 +111,9 @@
   <div class="container">
     <h1 class="title">Minhas Reservas</h1>
     <div class="reservations">
-      {% if reservations %}
-      {% for reservation in reservations %}
+      <h2>Quadras</h2>
+      {% if court_reservations %}
+      {% for reservation in court_reservations %}
       <div class="reservation">
         <div>
           <h3>{{ reservation.court.name }}</h3>
@@ -126,7 +129,29 @@
       </div>
       {% endfor %}
       {% else %}
-      <p>Você não possui reservas.</p>
+      <p>Você não possui reservas de quadras.</p>
+      {% endif %}
+    </div>
+    <div class="reservations">
+      <h2>Churrasqueiras</h2>
+      {% if bbq_reservations %}
+      {% for reservation in bbq_reservations %}
+      <div class="reservation">
+        <div>
+          <h3>{{ reservation.bbq.name }}</h3>
+          <p>Data: {{ reservation.date }}</p>
+          <p>Horário: {{ reservation.time_slot }}</p>
+        </div>
+        {% if reservation.can_delete %}
+        <form method="post" action="{% url 'delete_bbq_reservation' reservation.id %}">
+          {% csrf_token %}
+          <button type="submit" class="delete-button">Excluir</button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <p>Você não possui reservas de churrasqueiras.</p>
       {% endif %}
     </div>
     <a href="{% url 'home' %}" class="button">Voltar</a>

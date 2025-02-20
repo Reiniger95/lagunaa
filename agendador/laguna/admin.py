@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Court, Reservation, RecurringReservation, CustomUser
+from .models import Court, Reservation, RecurringReservation, CustomUser, BBQ, BBQReservation
 from datetime import date, timedelta
 
 class CustomAdminSite(admin.AdminSite):
@@ -20,9 +20,14 @@ class CustomAdminSite(admin.AdminSite):
                     model['name'] = 'Reservas Recorrentes'
                 elif model['object_name'] == 'CustomUser':
                     model['name'] = 'Usuários'
+                elif model['object_name'] == 'BBQ':
+                    model['name'] = 'Churrasqueiras'
+                elif model['object_name'] == 'BBQReservation':
+                    model['name'] = 'Reservas de Churrasqueiras'
         return app_list
 
 custom_admin_site = CustomAdminSite(name='custom_admin')
+
 @admin.register(Court)
 class CourtAdmin(admin.ModelAdmin):
     list_display = ('name', 'location')
@@ -30,7 +35,14 @@ class CourtAdmin(admin.ModelAdmin):
 @admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
     list_display = ('user', 'court', 'date', 'time_slot')
-# Register your models here.
+
+@admin.register(BBQ)
+class BBQAdmin(admin.ModelAdmin):
+    list_display = ('name', 'location')
+
+@admin.register(BBQReservation)
+class BBQReservationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'bbq', 'date', 'time_slot')
 
 @admin.register(RecurringReservation)
 class RecurringReservationAdmin(admin.ModelAdmin):
@@ -61,7 +73,7 @@ class RecurringReservationAdmin(admin.ModelAdmin):
                         name=obj.name
                     )
             dia_atual += timedelta(days=1)
-            
+
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
     list_display = ('email', 'phone', 'full_name', 'is_staff', 'is_active')
@@ -70,7 +82,7 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('email', 'password')}),
         ('Informações Pessoais', {'fields': ('phone', 'full_name')}),
         ('Permissões', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Datas Importantes', {'fields': ('last_login', 'date_joined')}),
+        ('Datas Importantes', {'fields': ('last_login',)}),  # Remova 'date_joined'
     )
     add_fieldsets = (
         (None, {
@@ -80,8 +92,11 @@ class CustomUserAdmin(UserAdmin):
     )
     search_fields = ('email', 'phone', 'full_name')
     ordering = ('email',)
+
 admin.site = custom_admin_site
 admin.site.register(Court, CourtAdmin)
 admin.site.register(Reservation, ReservationAdmin)
+admin.site.register(BBQ, BBQAdmin)
+admin.site.register(BBQReservation, BBQReservationAdmin)
 admin.site.register(RecurringReservation, RecurringReservationAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)

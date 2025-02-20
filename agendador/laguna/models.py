@@ -26,6 +26,23 @@ class Court(models.Model):
 
     def __str__(self):
         return self.name
+    
+class BBQ(models.Model):
+    name = models.CharField(max_length=100)
+    location = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+    
+class BBQReservation(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    bbq = models.ForeignKey(BBQ, on_delete=models.CASCADE)
+    date = models.DateField()
+    time_slot = models.TimeField()
+    name = models.CharField(max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.bbq.name} - {self.date} {self.time_slot}"
 
 class Reservation(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

@@ -7,13 +7,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Selecione o Horário</title>
   <style>
-    html, body {
+    body {
       font-family: 'Century Gothic', Arial, sans-serif;
       margin: 0;
-      height: 100%;
       padding: 0;
-      display: flex;
-      flex-direction: column;
     }
 
     .container {
@@ -23,6 +20,7 @@
       justify-content: center;
       width: 90%;
       margin: 0 auto;
+      height: 80vh;
     }
 
     .time-slots {
@@ -40,7 +38,7 @@
       border: 2px solid #0056b3;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 22px;
+      font-size: 24px;
       text-align: center;
       box-sizing: border-box;
     }
@@ -66,7 +64,7 @@
       color: #fff;
     }
 
-  .button {
+    .button {
       background-color: #0056b3;
       color: white;
       padding: 10px 20px;
@@ -78,52 +76,25 @@
       margin-top: 20px;
       transition: background-color 0.3s, color 0.3s;
       flex: 1;
-      /* Permitir que o botão cresça */
       margin-left: 10px;
-      /* Espaçamento entre os botões */
     }
 
     .button:hover {
       background-color: #004494;
     }
 
-     .button-container {
+    .button-container {
       display: flex;
       justify-content: space-between;
-      margin-top: 10px;
-      margin-bottom: 150px;
-      /* Ajuste para dispositivos móveis */
+      margin-top: 50px;
     }
 
-
-     .title {
+    .title {
       text-align: center;
       font-family: 'Century Gothic', Arial, sans-serif;
       font-size: 32px;
       color: #0056b3;
     }
-
-    
-
-      .button {
-      background-color: #0056b3;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 30px;
-      margin-top: 20px;
-      transition: background-color 0.3s, color 0.3s;
-      flex: 1;
-      /* Permitir que o botão cresça */
-      margin-left: 10px;
-      /* Espaçamento entre os botões */
-    }
-    
-
-   
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -136,9 +107,9 @@
         });
       });
       const backButton = document.querySelector('.back-button');
-        backButton.addEventListener('click', function () {
-          history.back();
-        });
+      backButton.addEventListener('click', function () {
+        history.back();
+      });
     });
   </script>
 </head>

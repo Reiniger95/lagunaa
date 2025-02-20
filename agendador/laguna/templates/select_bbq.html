@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selecione a Churrasqueira</title>
+  <style>
+    body {
+      font-family: 'Century Gothic', Arial, sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    .bbqs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .bbq {
+      max-height: 50px;
+      width: 100%;
+      max-width: 300px;
+      margin: 5px;
+      padding: 40px;
+      text-align: center;
+      border: 2px solid #0056b3;
+      border-radius: 10px;
+      background-color: #f0f0f0;
+      cursor: pointer;
+      font-size: 24px;
+      color: #0056b3;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .bbq.unavailable {
+      background-color: #ffcccc;
+      cursor: not-allowed;
+    }
+
+    .bbq input {
+      display: none;
+    }
+
+    .bbq label {
+      display: block;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    }
+
+    .bbq.selected {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .button {
+      background-color: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 16px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #004494;
+    }
+
+    .title {
+      text-align: center;
+      font-family: 'Century Gothic', Arial, sans-serif;
+      font-size: 32px;
+      color: #0056b3;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .bbq {
+        width: calc(50% - 10px);
+        font-size: 16px;
+      }
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const bbqs = document.querySelectorAll('.bbq');
+      bbqs.forEach(bbq => {
+        bbq.addEventListener('click', function () {
+          if (!this.classList.contains('unavailable')) {
+            bbqs.forEach(b => b.classList.remove('selected'));
+            this.classList.add('selected');
+            this.querySelector('input').checked = true;
+          }
+        });
+      });
+      const backButton = document.querySelector('.back-button');
+      backButton.addEventListener('click', function () {
+        history.back();
+      });
+    });
+  </script>
+</head>
+
+<body>
+  {% include 'header.html' %}
+  <div class="container">
+    <h1 class="title">Selecione a Churrasqueira</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="bbqs">
+        {% for bbq in bbqs %}
+        <div class="bbq {% if bbq.reserved %}unavailable{% endif %}">
+          <label>
+            <input type="radio" name="bbq_id" value="{{ bbq.id }}" {% if bbq.reserved %}disabled{% endif %}>
+            {{ bbq.name }} - {{ bbq.location }}
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="button-container">
+        <button type="button" class="button back-button">Voltar</button>
+        <button type="submit" class="button">Próximo</button>
+      </div>
+    </form>
+  </div>
+  {% include 'footer.html' %}
+</body>
+
+</html>

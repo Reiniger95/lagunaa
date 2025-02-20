@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, LoginForm, DateForm, TimeSlotForm, ReservationForm
-from .models import Court, CustomUser, Reservation
+from .models import Court, CustomUser, Reservation, BBQ, BBQReservation
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime, time, timedelta
 from django.utils import timezone
@@ -56,6 +56,18 @@ def select_date_view(request):
     else:
         form = DateForm()
     return render(request, 'select_date.html', {'form': form})
+
+@login_required
+def select_date_bbq_view(request):
+    if request.method == 'POST':
+        form = DateForm(request.POST)
+        if form.is_valid():
+            request.session['date'] = form.cleaned_data['date'].isoformat()
+            return redirect('select_time_slot_bbq')
+    else:
+        form = DateForm()
+    return render(request, 'select_date_bbq.html', {'form': form})
+
 @login_required
 def select_time_slot_view(request):
     date = request.session.get('date')
@@ -79,7 +91,73 @@ def select_time_slot_view(request):
         form = TimeSlotForm()
 
     return render(request, 'select_time_slot.html', {'form': form, 'available_times': available_times})
+@login_required
+def select_time_slot_view(request):
+    date = request.session.get('date')
+    available_times = []
+    total_courts = Court.objects.count()
+    
+    for hour in range(8, 23):
+        start_time = time(hour, 0)
+        reservations = Reservation.objects.filter(date=date, time_slot=start_time).count()
+        if reservations >= total_courts:
+            available_times.append((start_time.strftime('%H:%M'), False))  # False indicates not available
+        else:
+            available_times.append((start_time.strftime('%H:%M'), True))  # True indicates available
 
+    if request.method == 'POST':
+        form = TimeSlotForm(request.POST)
+        if form.is_valid():
+            request.session['time_slot'] = form.cleaned_data['time_slot']
+            return redirect('select_court')
+    else:
+        form = TimeSlotForm()
+
+    return render(request, 'select_time_slot.html', {'form': form, 'available_times': available_times})
+@login_required
+def select_time_slot_bbq_view(request):
+    date = request.session.get('date')
+    available_times = []
+    total_bbqs = BBQ.objects.count()
+    
+    # Defina os horários específicos para churrasqueiras
+    time_slots = [time(12, 0), time(18, 0)]
+    
+    for start_time in time_slots:
+        reservations = BBQReservation.objects.filter(date=date, time_slot=start_time).count()
+        if reservations >= total_bbqs:
+            available_times.append((start_time.strftime('%H:%M'), False))  # False indicates not available
+        else:
+            available_times.append((start_time.strftime('%H:%M'), True))  # True indicates available
+
+    if request.method == 'POST':
+        form = TimeSlotForm(request.POST)
+        if form.is_valid():
+            request.session['time_slot'] = form.cleaned_data['time_slot']
+            return redirect('select_bbq')
+    else:
+        form = TimeSlotForm()
+
+    return render(request, 'select_time_slot_bbq.html', {'form': form, 'available_times': available_times})
+@login_required
+def select_bbq_view(request):
+    date = request.session.get('date')
+    time_slot = request.session.get('time_slot')
+    available_bbqs = BBQ.objects.exclude(
+        bbqreservation__date=date,
+        bbqreservation__time_slot=time_slot
+    )
+    if request.method == 'POST':
+        bbq_id = request.POST.get('bbq_id')
+        bbq = BBQ.objects.get(id=bbq_id)
+        BBQReservation.objects.create(
+            user=request.user,
+            bbq=bbq,
+            date=date,
+            time_slot=time_slot
+        )
+        return redirect('home')
+    return render(request, 'select_bbq.html', {'bbqs': available_bbqs})
 @login_required
 def select_court_view(request):
     date = request.session.get('date')
@@ -104,11 +182,20 @@ def select_court_view(request):
 def agenda_view(request):
     today = timezone.now().date()
     yesterday = today - timedelta(days=1)
-    reservations = Reservation.objects.filter(date__gte=yesterday, user=request.user).order_by('date', 'time_slot')
-    for reservation in reservations:
+    
+    court_reservations = Reservation.objects.filter(date__gte=yesterday, user=request.user).order_by('date', 'time_slot')
+    bbq_reservations = BBQReservation.objects.filter(date__gte=yesterday, user=request.user).order_by('date', 'time_slot')
+    
+    for reservation in court_reservations:
         reservation.can_delete = (reservation.date - timezone.now().date()).days > 1
-    return render(request, 'agenda.html', {'reservations': reservations})
-
+    
+    for reservation in bbq_reservations:
+        reservation.can_delete = (reservation.date - timezone.now().date()).days > 1
+    
+    return render(request, 'agenda.html', {
+        'court_reservations': court_reservations,
+        'bbq_reservations': bbq_reservations
+    })
 @login_required
 def delete_reservation_view(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
@@ -116,6 +203,12 @@ def delete_reservation_view(request, reservation_id):
         reservation.delete()
     return redirect('agenda')
 
+@login_required
+def delete_bbq_reservation(request, reservation_id):
+    reservation = get_object_or_404(BBQReservation, id=reservation_id, user=request.user)
+    if (reservation.date - timezone.now().date()).days > 1:
+        reservation.delete()
+    return redirect('agenda')
 @staff_member_required
 def admin_schedule_view(request):
     date_str = request.GET.get('date', datetime.today().strftime('%Y-%m-%d'))
