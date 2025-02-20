@@ -141,7 +141,7 @@
           {% for slot in row.slots %}
           <td class="{% if slot.reservation %}reserved{% endif %}">
             {% if slot.reservation %}
-            {{ slot.reservation.name|default:slot.reservation.user.email }}
+            {{ slot.reservation.name|default:slot.reservation.user.full_name }}
             <form method="post">
               {% csrf_token %}
               <input type="hidden" name="court" value="{{ slot.court.name }}">
@@ -173,7 +173,7 @@
       <thead>
         <tr>
           <th>Data/Hora</th>
-          <th>Email</th>
+          <th>Usuario</th>
           <th>Telefone</th>
         </tr>
       </thead>
@@ -181,7 +181,7 @@
         {% for reservation in all_reservations %}
         <tr>
           <td>{{ reservation.date }} {{ reservation.time_slot }}</td>
-          <td>{{ reservation.user.email }}</td>
+          <td>{{ reservation.user.full_name }}</td>
             <td>{{ reservation.user.phone }}</td>
           
         </tr>
@@ -195,7 +195,7 @@
     <tr>
       <th>Data/Hora</th>
       <th>Churrasqueira</th>
-      <th>Email</th>
+      <th>Usuario</th>
     </tr>
   </thead>
   <tbody>
@@ -203,7 +203,7 @@
     <tr>
       <td>{{ reservation.date }} {{ reservation.time_slot }}</td>
       <td>{{ reservation.bbq.name }}</td>
-      <td>{{ reservation.user.email }}</td>
+      <td>{{ reservation.user.full_name }}</td>
       
     </tr>
     {% endfor %}
