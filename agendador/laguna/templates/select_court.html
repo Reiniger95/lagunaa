@@ -33,7 +33,7 @@
       width: 100%;
       max-width: 300px;
       margin: 5px;
-      padding: 40px;
+      padding: 20px;
       text-align: center;
       border: 2px solid #0056b3;
       border-radius: 10px;
@@ -212,7 +212,7 @@
         <div class="court {% if court.reserved %}unavailable{% endif %}">
           <label>
             <input type="radio" name="court_id" value="{{ court.id }}" {% if court.reserved %}disabled{% endif %}>
-            {{ court.name }} - {{ court.location }}
+            {{ court.name }}
           </label>
         </div>
         {% endfor %}
