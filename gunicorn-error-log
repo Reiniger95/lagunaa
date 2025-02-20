@@ -15805,3 +15805,5 @@ Arguments: ()
  - - [20/Feb/2025:11:35:21 +0000] "GET / HTTP/1.1" 302 0 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
 [2025-02-20 11:35:21 +0000] [2983] [DEBUG] GET /login/
  - - [20/Feb/2025:11:35:21 +0000] "GET /login/?next=/ HTTP/1.1" 200 4230 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36"
+[2025-02-20 11:55:34 +0000] [2980] [DEBUG] GET /autodiscover/autodiscover.json
+ - - [20/Feb/2025:11:55:34 +0000] "GET /autodiscover/autodiscover.json?@zdi/Powershell HTTP/1.1" 404 179 "-" "Mozilla/5.0 zgrab/0.x"
