@@ -26,23 +26,48 @@
     .title {
       text-align: center;
       font-family: 'Century Gothic', Arial, sans-serif;
-      font-size: 24px;
+      font-size: 20px;
       color: #0056b3;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      background-color: #f4f4f4;
+    }
+
+    .tab.active {
+      background-color: white;
+      border-top: 2px solid #4CAF50;
+    }
+
+    .tab-content {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: white;
+      width: 100%;
+      max-width: 800px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     .reservations {
       width: 100%;
-      max-width: 800px;
-      background-color: #fff;
-      border: 2px solid #0056b3;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      max-height: 500px;
-      /* Altura máxima para exibir 6 reservas */
+      max-height: 280px;
       overflow-y: auto;
-      /* Adicionar rolagem vertical */
     }
 
     .reservation {
@@ -59,12 +84,12 @@
 
     .reservation h3 {
       margin: 0;
-      font-size: 30px;
+      font-size: 16px;
       color: #0056b3;
     }
 
     .reservation p {
-      font-size: 20px;
+      font-size: 12px;
       margin: 5px 0;
       color: #666;
     }
@@ -110,53 +135,77 @@
   {% include 'header.html' %}
   <div class="container">
     <h1 class="title">Minhas Reservas</h1>
-    <div class="reservations">
-      <h2>Quadras</h2>
-      {% if court_reservations %}
-      {% for reservation in court_reservations %}
-      <div class="reservation">
-        <div>
-          <h3>{{ reservation.court.name }}</h3>
-          <p>Data: {{ reservation.date }}</p>
-          <p>Horário: {{ reservation.time_slot }}</p>
+    <div class="tabs">
+      <div class="tab active" data-tab="tab-1">Quadras</div>
+      <div class="tab" data-tab="tab-2">Churrasqueiras</div>
+    </div>
+
+    <!-- ABA 1: Reservas de Quadras -->
+    <div id="tab-1" class="tab-content active">
+      <div class="reservations">
+        {% if court_reservations %}
+        {% for reservation in court_reservations %}
+        <div class="reservation">
+          <div>
+            <h3>{{ reservation.court.name }}</h3>
+            <p>Data: {{ reservation.date }}</p>
+            <p>Horário: {{ reservation.time_slot }}</p>
+          </div>
+          {% if reservation.can_delete %}
+          <form method="post" action="{% url 'delete_reservation' reservation.id %}">
+            {% csrf_token %}
+            <button type="submit" class="delete-button">Excluir</button>
+          </form>
+          {% endif %}
         </div>
-        {% if reservation.can_delete %}
-        <form method="post" action="{% url 'delete_reservation' reservation.id %}">
-          {% csrf_token %}
-          <button type="submit" class="delete-button">Excluir</button>
-        </form>
+        {% endfor %}
+        {% else %}
+        <p>Você não possui reservas de quadras.</p>
         {% endif %}
       </div>
-      {% endfor %}
-      {% else %}
-      <p>Você não possui reservas de quadras.</p>
-      {% endif %}
     </div>
-    <div class="reservations">
-      <h2>Churrasqueiras</h2>
-      {% if bbq_reservations %}
-      {% for reservation in bbq_reservations %}
-      <div class="reservation">
-        <div>
-          <h3>{{ reservation.bbq.name }}</h3>
-          <p>Data: {{ reservation.date }}</p>
-          <p>Horário: {{ reservation.time_slot }}</p>
+
+    <!-- ABA 2: Reservas de Churrasqueiras -->
+    <div id="tab-2" class="tab-content">
+      <div class="reservations">
+        {% if bbq_reservations %}
+        {% for reservation in bbq_reservations %}
+        <div class="reservation">
+          <div>
+            <h3>{{ reservation.bbq.name }}</h3>
+            <p>Data: {{ reservation.date }}</p>
+            <p>Horário: {{ reservation.time_slot }}</p>
+          </div>
+          {% if reservation.can_delete %}
+          <form method="post" action="{% url 'delete_bbq_reservation' reservation.id %}">
+            {% csrf_token %}
+            <button type="submit" class="delete-button">Excluir</button>
+          </form>
+          {% endif %}
         </div>
-        {% if reservation.can_delete %}
-        <form method="post" action="{% url 'delete_bbq_reservation' reservation.id %}">
-          {% csrf_token %}
-          <button type="submit" class="delete-button">Excluir</button>
-        </form>
+        {% endfor %}
+        {% else %}
+        <p>Você não possui reservas de churrasqueiras.</p>
         {% endif %}
       </div>
-      {% endfor %}
-      {% else %}
-      <p>Você não possui reservas de churrasqueiras.</p>
-      {% endif %}
     </div>
+
     <a href="{% url 'home' %}" class="button">Voltar</a>
   </div>
   {% include 'footer.html' %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+          this.classList.add('active');
+          document.getElementById(this.getAttribute('data-tab')).classList.add('active');
+        });
+      });
+    });
+  </script>
 </body>
 
 </html>
