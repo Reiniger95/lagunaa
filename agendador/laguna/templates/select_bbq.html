@@ -32,15 +32,14 @@
     .bbq {
       max-height: 50px;
       width: 100%;
-      max-width: 300px;
       margin: 5px;
-      padding: 40px;
+      padding: 20px;
       text-align: center;
       border: 2px solid #0056b3;
       border-radius: 10px;
       background-color: #f0f0f0;
       cursor: pointer;
-      font-size: 24px;
+      font-size: 20px;
       color: #0056b3;
       transition: background-color 0.3s, color 0.3s;
     }
@@ -135,7 +134,7 @@
         <div class="bbq {% if bbq.reserved %}unavailable{% endif %}">
           <label>
             <input type="radio" name="bbq_id" value="{{ bbq.id }}" {% if bbq.reserved %}disabled{% endif %}>
-            {{ bbq.name }} - {{ bbq.location }}
+            {{ bbq.name }}
           </label>
         </div>
         {% endfor %}

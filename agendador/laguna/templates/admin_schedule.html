@@ -120,6 +120,7 @@
   <div class="tabs">
     <div class="tab active" data-tab="tab-1">Quadras</div>
     <div class="tab" data-tab="tab-2">Todas as Reservas</div>
+    <div class="tab" data-tab="tab-3">Churrasqueiras</div>
   </div>
 
   <!-- ABA 1: Tabela de quadras para o dia selecionado -->
@@ -188,7 +189,27 @@
       </tbody>
     </table>
   </div>
-
+<div id="tab-3" class="tab-content">
+<table>
+  <thead>
+    <tr>
+      <th>Data/Hora</th>
+      <th>Churrasqueira</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for reservation in bbq_reservations %}
+    <tr>
+      <td>{{ reservation.date }} {{ reservation.time_slot }}</td>
+      <td>{{ reservation.bbq.name }}</td>
+      <td>{{ reservation.user.email }}</td>
+      
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
     flatpickr("#datepicker", {

@@ -211,8 +211,11 @@ def delete_bbq_reservation(request, reservation_id):
     return redirect('agenda')
 @staff_member_required
 def admin_schedule_view(request):
+    today = timezone.now().date()
+    yesterday = today - timedelta(days=1)
     date_str = request.GET.get('date', datetime.today().strftime('%Y-%m-%d'))
     error_message = None
+    bbq_reservations = BBQReservation.objects.filter(date__gte=yesterday).order_by('date', 'time_slot')
     try:
         date_chosen = datetime.strptime(date_str, '%Y-%m-%d').date()
     except ValueError:
@@ -268,5 +271,6 @@ def admin_schedule_view(request):
         'schedule_rows': schedule_rows,
         'courts': courts,
         'all_reservations': all_reservations,
+        'bbq_reservations': bbq_reservations,
         'error_message': error_message
     })
