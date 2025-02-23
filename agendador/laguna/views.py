@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, LoginForm, DateForm, TimeSlotForm, ReservationForm
-from .models import Court, CustomUser, Reservation, BBQ, BBQReservation
+from .models import Court, CustomUser, Reservation, BBQ, BBQReservation, Modalidade, Caixa
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime, time, timedelta
 from django.utils import timezone
@@ -225,6 +225,52 @@ def admin_schedule_view(request):
     reservations_for_day = Reservation.objects.filter(date=date_chosen).order_by('time_slot')
     courts = Court.objects.all()
     hours = range(8, 23)
+    members = CustomUser.objects.filter(is_member=True).order_by('membership_venc_date')
+    
+    for member in members:
+        member.check_membership_status()
+
+    if request.method == 'POST' and 'renew_membership' in request.POST:
+        user_id = request.POST.get('user_id')
+        user = CustomUser.objects.get(id=user_id)
+        user.renew_membership()
+        try:
+            sociedade_mod = Modalidade.objects.get(nome__iexact='sociedade')
+        except Modalidade.DoesNotExist:
+        # Você pode criar a modalidade se quiser, neste exemplo apenas ignoramos
+            sociedade_mod = None
+
+        if sociedade_mod:
+            Caixa.objects.create(
+                modalidade=sociedade_mod,
+                data=timezone.now().date(),
+                valor=300,
+                metodo_pagamento='dinheiro',
+                usuario=user
+            )
+
+        return redirect(f"{reverse('admin_schedule')}?tab=socios")
+    elif 'create_caixa' in request.POST:
+            modalidade_id = request.POST.get('modalidade')
+            data = request.POST.get('data')
+            valor = request.POST.get('valor')
+            metodo_pagamento = request.POST.get('metodo_pagamento')
+            usuario_id = request.POST.get('usuario')
+            usuario = CustomUser.objects.get(id=usuario_id) if usuario_id else None
+
+            modalidade = Modalidade.objects.get(id=modalidade_id)
+            Caixa.objects.create(
+                modalidade=modalidade,
+                data=data,
+                valor=valor,
+                metodo_pagamento=metodo_pagamento,
+                usuario=usuario
+            )
+            if modalidade.nome.lower() == "sociedade" and usuario:
+                usuario.renew_membership()
+                usuario.save()
+    
+            return redirect(f"{reverse('admin_schedule')}?tab=caixa")
 
     # Carrega todas as reservas (para a outra aba)
     all_reservations = Reservation.objects.all().order_by('date', 'time_slot')
@@ -266,11 +312,33 @@ def admin_schedule_view(request):
 
         return redirect(f"{reverse('admin_schedule')}?date={date_str}")
 
+    modalidades = Modalidade.objects.all()
+    caixas = Caixa.objects.all().order_by('-data')
+    users = CustomUser.objects.all()
+    filtro_metodo = request.GET.get('metodo', '')
+    filtro_data_inicio = request.GET.get('data_inicio', '')
+    filtro_data_fim = request.GET.get('data_fim', '')
+    caixas_qs = Caixa.objects.all()
+
+    if filtro_metodo:
+        caixas_qs = caixas_qs.filter(metodo_pagamento__iexact=filtro_metodo)
+    if filtro_data_inicio and filtro_data_fim:
+        caixas_qs = caixas_qs.filter(data__range=[filtro_data_inicio, filtro_data_fim])
+    filtro_usuario_id = request.GET.get('user_id', '')
+    if filtro_usuario_id:
+        caixas_qs = caixas_qs.filter(usuario__id=filtro_usuario_id)
+    # Ordena por data desc e limita a 30
+    caixas = caixas_qs.order_by('-data')[:30]
+
     return render(request, 'admin_schedule.html', {
         'date': date_chosen,
         'schedule_rows': schedule_rows,
         'courts': courts,
         'all_reservations': all_reservations,
         'bbq_reservations': bbq_reservations,
+        'members': members,
+        'modalidades': modalidades,
+        'caixas': caixas,
+        'users': users,
         'error_message': error_message
     })

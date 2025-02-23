@@ -49,9 +49,14 @@
     .title {
       text-align: center;
       font-family: 'Century Gothic', Arial, sans-serif;
-      font-size: 24px;
+      font-size: 20px;
       color: #0056b3;
-      margin-bottom: 20px;
+    }
+    p { 
+      font-size: 14px;
+      color: #0056b3; 
+      text-align: center;
+      font-family: 'Century Gothic', Arial, sans-serif;
     }
 
     .logout {
@@ -70,22 +75,64 @@
     .logout:hover {
       background-color: #ff1a1a;
     }
+     .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 9999; 
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 100px auto;
+      padding: 20px;
+      max-width: 400px;
+      border-radius: 10px;
+    }
+    .close-btn {
+      float: right;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+    }
   </style>
 </head>
 
 <body>
   {% include 'header.html' %}
   <div class="container">
-    <h1 class="title">Bem-vindo, {{ user.full_name }}</h1>
+    {% if user.is_member %}
+    <h1 class="title">
+      Bem-vindo, {{ user.full_name }}!
+    </h1>
+      <p>Sua sociedade expira em {{ user.membership_venc_date|date:"d/m/Y" }}.</p>
+    {% else %}
+    <h1 class="title">
+      Bem-vindo, {{ user.full_name }}!
+    </h1>
+      <p>Você conhece as vantagens de ser sócio Laguna?
+      <a href="#" onclick="document.getElementById('modalSocio').style.display='block'">Clique aqui</a>
+    {% endif %}</p>
+
     <a href="{% url 'select_date' %}" class="box">Reservar Quadra</a>
-    <a href="{% url 'agenda' %}" class="box">
-      Suas reservas
-    </a>
-    <a href="{% url 'select_date_bbq' %}" class="box">
-      Reservar Churrasqueira
-    </a>
+    <a href="{% url 'agenda' %}" class="box">Suas reservas</a>
+    <a href="{% url 'select_date_bbq' %}" class="box">Reservar Churrasqueira</a>
     <a href="{% url 'logout' %}" class="logout">Sair</a>
   </div>
+
+  <!-- Modal para informações sobre sociedade -->
+  <div id="modalSocio" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="document.getElementById('modalSocio').style.display='none'">&times;</span>
+      <h2>Vantagens de ser sócio</h2>
+      <p>Aqui você pode detalhar vantagens como descontos, uso preferencial nas reservas, etc.</p>
+    </div>
+  </div>
+
   {% include 'footer.html' %}
 </body>
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Court, Reservation, RecurringReservation, CustomUser, BBQ, BBQReservation
+from .models import Court, Caixa, Modalidade, Reservation, RecurringReservation, CustomUser, BBQ, BBQReservation
 from datetime import date, timedelta
 
 class CustomAdminSite(admin.AdminSite):
@@ -24,6 +24,10 @@ class CustomAdminSite(admin.AdminSite):
                     model['name'] = 'Churrasqueiras'
                 elif model['object_name'] == 'BBQReservation':
                     model['name'] = 'Reservas de Churrasqueiras'
+                elif model['object_name'] == 'Modalidade':
+                    model['name'] = 'Modalidades'
+                elif model['object_name'] == 'Caixa':
+                    model['name'] = 'Caixa'
         return app_list
 
 custom_admin_site = CustomAdminSite(name='custom_admin')
@@ -76,22 +80,32 @@ class RecurringReservationAdmin(admin.ModelAdmin):
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('email', 'phone', 'full_name', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_active')
+    list_display = ('email', 'phone', 'full_name', 'is_staff', 'is_active', 'is_member', 'membership_venc_date')
+    list_filter = ('is_staff', 'is_active', 'is_member')
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
-        ('Informações Pessoais', {'fields': ('phone', 'full_name')}),
+        ('Informações Pessoais', {'fields': ('phone', 'full_name', 'is_member', 'membership_venc_date')}),
         ('Permissões', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
         ('Datas Importantes', {'fields': ('last_login',)}),  # Remova 'date_joined'
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('email', 'phone', 'full_name', 'password1', 'password2', 'is_staff', 'is_active')}
+            'fields': ('email', 'phone', 'full_name', 'password1', 'password2', 'is_staff', 'is_active', 'is_member', 'membership_venc_date')}
         ),
     )
     search_fields = ('email', 'phone', 'full_name')
     ordering = ('email',)
+
+@admin.register(Modalidade)
+class ModalidadeAdmin(admin.ModelAdmin):
+    list_display = ('nome',)
+
+@admin.register(Caixa)
+class CaixaAdmin(admin.ModelAdmin):
+    list_display = ('modalidade', 'data', 'valor', 'metodo_pagamento', 'usuario')
+    list_filter = ('metodo_pagamento', 'modalidade')
+    search_fields = ('modalidade__nome', 'usuario__email')
 
 admin.site = custom_admin_site
 admin.site.register(Court, CourtAdmin)
@@ -100,3 +114,5 @@ admin.site.register(BBQ, BBQAdmin)
 admin.site.register(BBQReservation, BBQReservationAdmin)
 admin.site.register(RecurringReservation, RecurringReservationAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Modalidade, ModalidadeAdmin)
+admin.site.register(Caixa, CaixaAdmin)

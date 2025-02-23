@@ -5,7 +5,7 @@
   {% load static %}
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Selecione a Churrasqueira</title>
+  <title>Selecione a Quadra</title>
   <style>
     body {
       font-family: 'Century Gothic', Arial, sans-serif;
@@ -16,10 +16,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 80%;
+      width: 100%;
       margin: 0 auto;
     }
 
+    .courts,
     .bbqs {
       display: flex;
       flex-wrap: wrap;
@@ -29,11 +30,13 @@
       margin-bottom: 20px;
     }
 
+    .court,
     .bbq {
       max-height: 50px;
       width: 100%;
+      max-width: 300px;
       margin: 5px;
-      padding: 20px;
+      padding: 10px;
       text-align: center;
       border: 2px solid #0056b3;
       border-radius: 10px;
@@ -44,15 +47,18 @@
       transition: background-color 0.3s, color 0.3s;
     }
 
+    .court.unavailable,
     .bbq.unavailable {
       background-color: #ffcccc;
       cursor: not-allowed;
     }
 
+    .court input,
     .bbq input {
       display: none;
     }
 
+    .court label,
     .bbq label {
       display: block;
       width: 100%;
@@ -60,6 +66,7 @@
       text-align: center;
     }
 
+    .court.selected,
     .bbq.selected {
       background-color: #007bff;
       color: #fff;
@@ -97,24 +104,85 @@
     }
 
     @media (max-width: 768px) {
+
+      .court,
       .bbq {
         width: calc(50% - 10px);
         font-size: 16px;
       }
     }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 2px solid #0056b3;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .close {
+      color: red;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: darkred;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      const courts = document.querySelectorAll('.court');
       const bbqs = document.querySelectorAll('.bbq');
-      bbqs.forEach(bbq => {
-        bbq.addEventListener('click', function () {
-          if (!this.classList.contains('unavailable')) {
-            bbqs.forEach(b => b.classList.remove('selected'));
-            this.classList.add('selected');
-            this.querySelector('input').checked = true;
-          }
+      const modal = document.getElementById('myModal');
+      const span = document.getElementsByClassName('close')[0];
+
+      function handleSelection(elements) {
+        elements.forEach(element => {
+          element.addEventListener('click', function () {
+            if (!this.classList.contains('unavailable')) {
+              elements.forEach(el => el.classList.remove('selected'));
+              this.classList.add('selected');
+              this.querySelector('input').checked = true;
+              modal.style.display = 'block';
+            }
+          });
         });
-      });
+      }
+
+      handleSelection(courts);
+      handleSelection(bbqs);
+
+      span.onclick = function () {
+        modal.style.display = 'none';
+      }
+
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = 'none';
+        }
+      }
+
       const backButton = document.querySelector('.back-button');
       backButton.addEventListener('click', function () {
         history.back();
@@ -126,9 +194,19 @@
 <body>
   {% include 'header.html' %}
   <div class="container">
-    <h1 class="title">Selecione a Churrasqueira</h1>
+    <h1 class="title">Selecione a Quadra ou Churrasqueira</h1>
     <form method="post">
       {% csrf_token %}
+      <div class="courts">
+        {% for court in courts %}
+        <div class="court {% if court.reserved %}unavailable{% endif %}">
+          <label>
+            <input type="radio" name="court_id" value="{{ court.id }}" {% if court.reserved %}disabled{% endif %}>
+            {{ court.name }}
+          </label>
+        </div>
+        {% endfor %}
+      </div>
       <div class="bbqs">
         {% for bbq in bbqs %}
         <div class="bbq {% if bbq.reserved %}unavailable{% endif %}">
@@ -144,6 +222,16 @@
         <button type="submit" class="button">Próximo</button>
       </div>
     </form>
+  </div>
+  <!-- Modal -->
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <strong>ATENÇÃO!</strong>
+      <p>Caro cliente, primeiramente obrigado pela preferência. Não cobramos pela utilização do espaço da churrasqueira, tampouco
+      exigimos que a carne seja comprada conosco (temos disponível caso necessário) nossa única exigência é que o consumo do
+      carvão e de bebidas com e sem álcool seja no bar do clube.</p>
+    </div>
   </div>
   {% include 'footer.html' %}
 </body>

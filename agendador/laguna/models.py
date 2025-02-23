@@ -4,6 +4,8 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django.conf import settings
 import datetime
+from datetime import date, timedelta
+from django.utils import timezone
 DAYS_OF_WEEK_CHOICES = [
     (0, "Segunda"),
     (1, "Terça"),
@@ -15,9 +17,24 @@ DAYS_OF_WEEK_CHOICES = [
 ]
 
 TIME_SLOT_CHOICES = [
+    ("06:00", "06:00"),
+    ("07:00", "07:00"),
+    ("08:00", "08:00"),
     ("09:00", "09:00"),
     ("10:00", "10:00"),
+    ("11:00", "11:00"),
+    ("12:00", "12:00"),
+    ("13:00", "13:00"),
+    ("14:00", "14:00"),
+    ("15:00", "15:00"),
+    ("16:00", "16:00"),
+    ("17:00", "17:00"),
+    ("18:00", "18:00"),
+    ("19:00", "19:00"),
+    ("20:00", "20:00"),
     ("21:00", "21:00"),
+    ("22:00", "22:00"),
+    ("23:00", "23:00"),
     # Adicione quantos horários precisar.
 ]
 class Court(models.Model):
@@ -75,6 +92,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=255, blank=True, null=True)  # Adicionando o campo full_name
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    is_member = models.BooleanField(default=False)  # Novo campo para indicar se o usuário é sócio
+    membership_venc_date = models.DateField(blank=True, null=True)  # Novo campo para a data da última mensalidade paga
 
     objects = CustomUserManager()
 
@@ -83,6 +102,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+    
+    def check_membership_status(self):
+        if self.membership_venc_date and self.membership_venc_date < date.today():
+            self.is_member = False
+            self.save()
+
+    def renew_membership(self):
+        if self.membership_venc_date and self.membership_venc_date >= date.today():
+            self.membership_venc_date += timedelta(days=30)
+        else:
+            self.membership_venc_date = timezone.now().date() + timedelta(days=30)
+        self.is_member = True
+        self.save()
     
 class RecurringReservation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -99,3 +131,27 @@ class RecurringReservation(models.Model):
 
     def __str__(self):
         return f"Recorrente: {self.user.email} - {self.court.name} (Dia {self.day_of_week}, {self.time_slot})"
+
+class Modalidade(models.Model):
+    nome = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nome
+
+class Caixa(models.Model):
+    METODO_PAGAMENTO_CHOICES = [
+        ('dinheiro', 'Dinheiro'),
+        ('pix', 'Pix'),
+        ('cartao_debito', 'Cartão Débito'),
+        ('cartao_credito', 'Cartão Crédito'),
+        ('fiado', 'Fiado'),
+    ]
+
+    modalidade = models.ForeignKey(Modalidade, on_delete=models.CASCADE)
+    data = models.DateField()
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    metodo_pagamento = models.CharField(max_length=20, choices=METODO_PAGAMENTO_CHOICES)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, default=None)
+
+    def __str__(self):
+        return f"{self.modalidade.nome} - {self.data} - {self.valor} - {self.metodo_pagamento}"
