@@ -322,6 +322,7 @@
       <th>Valor</th>
       <th>Método de Pagamento</th>
       <th>Usuário</th>
+      <th>Ação</th>
     </tr>
   </thead>
   <tbody>
@@ -337,6 +338,12 @@
         {% else %}
         N/A
         {% endif %}
+      </td>
+      <td>
+        <form method="post" action="{% url 'delete_caixa' caixa.id %}">
+          {% csrf_token %}
+          <button type="submit" class="delete-button">Excluir</button>
+        </form>
       </td>
     </tr>
     {% endfor %}
@@ -370,7 +377,7 @@
 
      setInterval(function () {
         location.reload();
-      }, 120000);
+      }, 190000);
   </script>
 </body>
 

@@ -342,3 +342,10 @@ def admin_schedule_view(request):
         'users': users,
         'error_message': error_message
     })
+
+
+@staff_member_required
+def delete_caixa(request, caixa_id):
+    caixa = get_object_or_404(Caixa, id=caixa_id)
+    caixa.delete()
+    return redirect(f"{reverse('admin_schedule')}?tab=caixa")
