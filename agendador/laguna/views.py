@@ -93,17 +93,39 @@ def select_time_slot_view(request):
     return render(request, 'select_time_slot.html', {'form': form, 'available_times': available_times})
 @login_required
 def select_time_slot_view(request):
-    date = request.session.get('date')
+    date_str = request.session.get('date')
+    if not date_str:
+        return redirect('select_date')
+    
+    date = datetime.strptime(date_str, '%Y-%m-%d').date()
     available_times = []
     total_courts = Court.objects.count()
     
-    for hour in range(8, 23):
-        start_time = time(hour, 0)
+    # Exemplo de horários disponíveis
+    all_times = [
+        "09:00", "10:00", "11:00", "12:00", "13:00",
+        "14:00", "15:00", "16:00", "17:00", "18:00",
+        "19:00", "20:00", "21:00", "22:00"
+    ]
+
+    # Obter o dia da semana (0 = segunda-feira, 6 = domingo)
+    day_of_week = date.weekday()
+
+    if day_of_week == 5:  # Sábado
+        valid_times = ["09:00", "10:00", "11:00", "12:00", "13:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
+    elif day_of_week == 6:  # Domingo
+        valid_times = ["09:00", "10:00", "11:00", "12:00", "13:00"]
+    else:  # Segunda a Sexta
+        valid_times = [time for time in all_times if time >= "09:00" and time <= "22:00"]
+
+    for time_str in valid_times:
+        hour, minute = map(int, time_str.split(':'))
+        start_time = time(hour, minute)
         reservations = Reservation.objects.filter(date=date, time_slot=start_time).count()
         if reservations >= total_courts:
-            available_times.append((start_time.strftime('%H:%M'), False))  # False indicates not available
+            available_times.append((time_str, False))  # False indicates not available
         else:
-            available_times.append((start_time.strftime('%H:%M'), True))  # True indicates available
+            available_times.append((time_str, True))  # True indicates available
 
     if request.method == 'POST':
         form = TimeSlotForm(request.POST)
