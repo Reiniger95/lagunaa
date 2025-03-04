@@ -199,20 +199,55 @@ def select_court_view(request):
         )
         return redirect('home')
     return render(request, 'select_court.html', {'courts': available_courts})
-
 @login_required
 def agenda_view(request):
-    today = timezone.now().date()
-    yesterday = today - timedelta(days=1)
+    now = timezone.now()
+    yesterday = now.date() - timedelta(days=1)
     
+    # Carregar as reservas
     court_reservations = Reservation.objects.filter(date__gte=yesterday, user=request.user).order_by('date', 'time_slot')
     bbq_reservations = BBQReservation.objects.filter(date__gte=yesterday, user=request.user).order_by('date', 'time_slot')
     
+    # Depuração para verificar valores
+    print(f"Current time: {now}")
+    
     for reservation in court_reservations:
-        reservation.can_delete = (reservation.date - timezone.now().date()).days > 1
+        # Combine a data e hora da reserva em um objeto datetime
+        reservation_datetime = datetime.combine(reservation.date, reservation.time_slot)
+        # Converta para um objeto aware (com timezone)
+        reservation_datetime = timezone.make_aware(reservation_datetime)
+        
+        # Calcular a diferença de tempo
+        time_diff = reservation_datetime - now
+        hours_diff = time_diff.total_seconds() / 3600
+        
+        # Debug - imprimir informações
+        print(f"Court Reservation: {reservation.id}, Date: {reservation.date}, Time: {reservation.time_slot}")
+        print(f"Reservation datetime: {reservation_datetime}")
+        print(f"Time difference: {hours_diff:.2f} hours")
+        
+        # Verifique se faltam mais de 24 horas
+        reservation.can_delete = time_diff.total_seconds() > 24 * 3600
+        print(f"Can delete: {reservation.can_delete}")
     
     for reservation in bbq_reservations:
-        reservation.can_delete = (reservation.date - timezone.now().date()).days > 1
+        # Combine a data e hora da reserva em um objeto datetime
+        reservation_datetime = datetime.combine(reservation.date, reservation.time_slot)
+        # Converta para um objeto aware (com timezone)
+        reservation_datetime = timezone.make_aware(reservation_datetime)
+        
+        # Calcular a diferença de tempo
+        time_diff = reservation_datetime - now
+        hours_diff = time_diff.total_seconds() / 3600
+        
+        # Debug - imprimir informações
+        print(f"BBQ Reservation: {reservation.id}, Date: {reservation.date}, Time: {reservation.time_slot}")
+        print(f"Reservation datetime: {reservation_datetime}")
+        print(f"Time difference: {hours_diff:.2f} hours")
+        
+        # Verifique se faltam mais de 24 horas
+        reservation.can_delete = time_diff.total_seconds() > 24 * 3600
+        print(f"Can delete: {reservation.can_delete}")
     
     return render(request, 'agenda.html', {
         'court_reservations': court_reservations,
@@ -221,15 +256,49 @@ def agenda_view(request):
 @login_required
 def delete_reservation_view(request, reservation_id):
     reservation = get_object_or_404(Reservation, id=reservation_id, user=request.user)
-    if (reservation.date - timezone.now().date()).days > 1:
+    
+    now = timezone.now()
+    reservation_datetime = datetime.combine(reservation.date, reservation.time_slot)
+    reservation_datetime = timezone.make_aware(reservation_datetime)
+    
+    time_diff = reservation_datetime - now
+    hours_diff = time_diff.total_seconds() / 3600
+    
+    print(f"Delete Court Reservation: {reservation.id}")
+    print(f"Current time: {now}")
+    print(f"Reservation datetime: {reservation_datetime}")
+    print(f"Time difference: {hours_diff:.2f} hours")
+    
+    if time_diff.total_seconds() > 24 * 3600:
         reservation.delete()
+        print("Reservation deleted successfully")
+    else:
+        print(f"Não é possível excluir reservas com menos de 24 horas de antecedência. Faltam {hours_diff:.2f} horas.")
+    
     return redirect('agenda')
 
 @login_required
-def delete_bbq_reservation(request, reservation_id):
+def delete_bbq_reservation_view(request, reservation_id):
     reservation = get_object_or_404(BBQReservation, id=reservation_id, user=request.user)
-    if (reservation.date - timezone.now().date()).days > 1:
+    
+    now = timezone.now()
+    reservation_datetime = datetime.combine(reservation.date, reservation.time_slot)
+    reservation_datetime = timezone.make_aware(reservation_datetime)
+    
+    time_diff = reservation_datetime - now
+    hours_diff = time_diff.total_seconds() / 3600
+    
+    print(f"Delete BBQ Reservation: {reservation.id}")
+    print(f"Current time: {now}")
+    print(f"Reservation datetime: {reservation_datetime}")
+    print(f"Time difference: {hours_diff:.2f} hours")
+    
+    if time_diff.total_seconds() > 24 * 3600:
         reservation.delete()
+        print("BBQ Reservation deleted successfully")
+    else:
+        print(f"Não é possível excluir reservas com menos de 24 horas de antecedência. Faltam {hours_diff:.2f} horas.")
+    
     return redirect('agenda')
 @staff_member_required
 def admin_schedule_view(request):
