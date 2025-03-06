@@ -184,20 +184,50 @@ def select_bbq_view(request):
 def select_court_view(request):
     date = request.session.get('date')
     time_slot = request.session.get('time_slot')
-    available_courts = Court.objects.exclude(
-        reservation__date=date,
-        reservation__time_slot=time_slot
-    )
+    
+    # Log para depuração
+    print(f"Select Court - Date: {date}, Time Slot: {time_slot}")
+    
+    # Obter todas as quadras
+    all_courts = Court.objects.all()
+    print(f"Total courts: {all_courts.count()}")
+    
+    # Obter quadras já reservadas para esta data e horário
+    reserved_courts_ids = Reservation.objects.filter(
+        date=date,
+        time_slot=time_slot
+    ).values_list('court_id', flat=True)
+    
+    print(f"Reserved court IDs: {list(reserved_courts_ids)}")
+    
+    # Filtrar apenas as quadras disponíveis
+    available_courts = all_courts.exclude(id__in=reserved_courts_ids)
+    print(f"Available courts: {available_courts.count()}")
+
+    # Se não houver quadras disponíveis, adicione uma mensagem de erro
+    if not available_courts:
+        print("Atenção: Não há quadras disponíveis para este horário!")
+    
     if request.method == 'POST':
         court_id = request.POST.get('court_id')
         court = Court.objects.get(id=court_id)
+        
+        # Verificar novamente se a quadra está disponível antes de criar a reserva
+        if Reservation.objects.filter(court=court, date=date, time_slot=time_slot).exists():
+            print(f"ERRO: Court ID {court_id} já está reservado para {date} às {time_slot}")
+            # Aqui você pode adicionar uma mensagem de erro para o usuário
+            return redirect('select_court')
+        
+        # Criar a reserva
         Reservation.objects.create(
             user=request.user,
             court=court,
             date=date,
             time_slot=time_slot
         )
+        print(f"Reserva criada com sucesso para Court ID {court_id}")
         return redirect('home')
+    
     return render(request, 'select_court.html', {'courts': available_courts})
 @login_required
 def agenda_view(request):
