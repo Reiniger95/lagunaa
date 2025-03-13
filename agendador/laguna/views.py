@@ -68,29 +68,7 @@ def select_date_bbq_view(request):
         form = DateForm()
     return render(request, 'select_date_bbq.html', {'form': form})
 
-@login_required
-def select_time_slot_view(request):
-    date = request.session.get('date')
-    available_times = []
-    total_courts = Court.objects.count()
-    
-    for hour in range(8, 23):
-        start_time = time(hour, 0)
-        reservations = Reservation.objects.filter(date=date, time_slot=start_time).count()
-        if reservations >= total_courts:
-            available_times.append((start_time.strftime('%H:%M'), False))  # False indicates not available
-        else:
-            available_times.append((start_time.strftime('%H:%M'), True))  # True indicates available
 
-    if request.method == 'POST':
-        form = TimeSlotForm(request.POST)
-        if form.is_valid():
-            request.session['time_slot'] = form.cleaned_data['time_slot']
-            return redirect('select_court')
-    else:
-        form = TimeSlotForm()
-
-    return render(request, 'select_time_slot.html', {'form': form, 'available_times': available_times})
 @login_required
 def select_time_slot_view(request):
     date_str = request.session.get('date')
@@ -105,7 +83,7 @@ def select_time_slot_view(request):
     all_times = [
         "09:00", "10:00", "11:00", "12:00", "13:00",
         "14:00", "15:00", "16:00", "17:00", "18:00",
-        "19:00", "20:00", "21:00", "22:00"
+        "19:00", "20:00", "21:00", 
     ]
 
     # Obter o dia da semana (0 = segunda-feira, 6 = domingo)
@@ -116,7 +94,7 @@ def select_time_slot_view(request):
     elif day_of_week == 6:  # Domingo
         valid_times = ["09:00", "10:00", "11:00", "12:00", "13:00"]
     else:  # Segunda a Sexta
-        valid_times = [time for time in all_times if time >= "09:00" and time <= "22:00"]
+        valid_times = [time for time in all_times if time >= "09:00" and time <= "21:00"]
 
     for time_str in valid_times:
         hour, minute = map(int, time_str.split(':'))
