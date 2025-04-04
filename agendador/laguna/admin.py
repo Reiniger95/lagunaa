@@ -49,6 +49,7 @@ class BBQReservationAdmin(admin.ModelAdmin):
     list_display = ('user', 'bbq', 'date', 'time_slot')
 
 @admin.register(RecurringReservation)
+
 class RecurringReservationAdmin(admin.ModelAdmin):
     list_display = ['user', 'court', 'day_of_week', 'time_slot', 'name']
 

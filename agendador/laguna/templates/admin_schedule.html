@@ -99,6 +99,33 @@
       padding: 5px;
       width: 150px;
     }
+      .action-container {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .action-container h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .btn-success {
+    display: inline-block;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .btn-success:hover {
+    background-color: #45a049;
+  }
   </style>
 </head>
 
@@ -124,6 +151,7 @@
     <div class="tab" data-tab="tab-3">Reservas Churrasqueiras</div>
     <div class="tab" data-tab="tab-4">Sócios</div>
     <div class="tab" data-tab="tab-5">Caixa</div>
+    <div class="tab" data-tab="tab-6">Reservas Recorrentes</div>
   </div>
 
   <!-- ABA 1: Tabela de quadras para o dia selecionado -->
@@ -350,6 +378,66 @@
   </tbody>
 </table>
   </div>
+  <!-- ABA 6: Reservas Recorrentes -->
+  <div id="tab-6" class="tab-content">
+    <div class="action-container" style="margin-bottom: 20px;">
+      <h3>Gerenciar Reservas Recorrentes</h3>
+      <p>Utilize o botão abaixo para criar automaticamente as reservas para os próximos 90 dias baseado nas configurações
+        recorrentes.</p>
+      <a href="{% url 'update_recurring_reservations' %}" class="btn btn-success"
+        style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        Atualizar Reservas Recorrentes
+      </a>
+  
+      {% if request.session.update_log %}
+      <div
+        style="margin-top: 15px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px;">
+        <h4>Resultado da última atualização:</h4>
+        <ul style="list-style-type: disc; margin-left: 20px;">
+          {% for log_item in request.session.update_log %}
+          <li>{{ log_item }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  
+    <table>
+      <thead>
+        <tr>
+          <th>Usuário</th>
+          <th>Quadra</th>
+          <th>Dia da Semana</th>
+          <th>Horário</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for recorrente in recurring_reservations %}
+        <tr>
+          <td>{{ recorrente.user.full_name }}</td>
+          <td>{{ recorrente.court.name }}</td>
+          <td>
+            {% if recorrente.day_of_week == 0 %}Segunda-feira
+            {% elif recorrente.day_of_week == 1 %}Terça-feira
+            {% elif recorrente.day_of_week == 2 %}Quarta-feira
+            {% elif recorrente.day_of_week == 3 %}Quinta-feira
+            {% elif recorrente.day_of_week == 4 %}Sexta-feira
+            {% elif recorrente.day_of_week == 5 %}Sábado
+            {% elif recorrente.day_of_week == 6 %}Domingo
+            {% endif %}
+          </td>
+          <td>{{ recorrente.time_slot }}</td>
+          <td>{{ recorrente.name|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align: center;">Nenhuma reserva recorrente encontrada.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script>
     flatpickr("#datepicker", {
@@ -373,6 +461,16 @@
     document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
     document.querySelector('[data-tab="tab-5"]').classList.add('active');
     document.getElementById('tab-5').classList.add('active');
+    {% elif request.GET.tab == 'reservas' %}
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.querySelector('[data-tab="tab-2"]').classList.add('active');
+      document.getElementById('tab-2').classList.add('active');
+    {% elif request.GET.tab == 'recorrentes' %}
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+      document.querySelector('[data-tab="tab-6"]').classList.add('active');
+      document.getElementById('tab-6').classList.add('active');
     {% endif %}
 
      setInterval(function () {

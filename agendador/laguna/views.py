@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import RegistrationForm, LoginForm, DateForm, TimeSlotForm, ReservationForm
-from .models import Court, CustomUser, Reservation, BBQ, BBQReservation, Modalidade, Caixa
+from .models import Court, CustomUser, Reservation, BBQ, BBQReservation, Modalidade, Caixa, RecurringReservation
+from django.contrib import messages
+from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from datetime import datetime, time, timedelta
 from django.utils import timezone
@@ -429,6 +431,12 @@ def admin_schedule_view(request):
     # Ordena por data desc e limita a 30
     caixas = caixas_qs.order_by('-data')[:30]
 
+
+    recurring_reservations = RecurringReservation.objects.all().order_by('day_of_week', 'time_slot')
+    
+    # Tratar parâmetro de tab na URL
+    active_tab = request.GET.get('tab', '')
+
     return render(request, 'admin_schedule.html', {
         'date': date_chosen,
         'schedule_rows': schedule_rows,
@@ -439,7 +447,10 @@ def admin_schedule_view(request):
         'modalidades': modalidades,
         'caixas': caixas,
         'users': users,
-        'error_message': error_message
+        'error_message': error_message,
+        'recurring_reservations': recurring_reservations,  # Nova variável
+        'active_tab': active_tab,  # Para ativar a aba correta
+        
     })
 
 
@@ -448,3 +459,55 @@ def delete_caixa(request, caixa_id):
     caixa = get_object_or_404(Caixa, id=caixa_id)
     caixa.delete()
     return redirect(f"{reverse('admin_schedule')}?tab=caixa")
+
+def update_recurring_reservations(request):
+    """Atualiza todas as reservas recorrentes para os próximos 90 dias."""
+    if not request.user.is_staff:
+        messages.error(request, "Você não tem permissão para acessar esta função.")
+        return redirect('home')
+    
+    # Data atual
+    hoje = date.today()
+    # Data até 90 dias no futuro
+    fim = hoje + timedelta(days=90)
+    
+    # Obter todas as reservas recorrentes
+    recurring_reservations = RecurringReservation.objects.all()
+    
+    count_novas = 0
+    
+    for recorrente in recurring_reservations:
+        dia_atual = hoje
+        while dia_atual <= fim:
+            # Verificar se o dia da semana corresponde
+            if dia_atual.weekday() == recorrente.day_of_week:
+                # Converter o time_slot de string para objeto time
+                hour, minute = map(int, recorrente.time_slot.split(':'))
+                time_obj = time(hour, minute)
+                
+                # Evitar duplicar caso já exista
+                ja_existe = Reservation.objects.filter(
+                    user=recorrente.user,
+                    court=recorrente.court,
+                    date=dia_atual,
+                    time_slot=time_obj
+                ).exists()
+                
+                if not ja_existe:
+                    # Criar nova reserva
+                    Reservation.objects.create(
+                        user=recorrente.user,
+                        court=recorrente.court,
+                        date=dia_atual,
+                        time_slot=time_obj,
+                        name=recorrente.name
+                    )
+                    count_novas += 1
+            
+            dia_atual += timedelta(days=1)
+    
+    messages.success(
+        request, 
+        f"As reservas recorrentes foram atualizadas com sucesso! {count_novas} novas reservas foram criadas."
+    )
+    return redirect(f"{reverse('admin_schedule')}?tab=reservas")
