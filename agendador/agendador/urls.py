@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from laguna.admin import custom_admin_site
-
+from .views import landing_page_view
 urlpatterns = [
-    path('admin/', custom_admin_site.urls),
-    path('', include('laguna.urls'))
+    path('', landing_page_view, name='landing_page'),
+    path('laguna/', include('laguna.urls'))
 ]

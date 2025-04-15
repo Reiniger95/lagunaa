@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from laguna.admin import custom_admin_site
 from .views import (
     register_view, 
     delete_caixa, 
@@ -19,6 +20,7 @@ from .views import (
     update_recurring_reservations
 )
 
+
 urlpatterns = [
     path('register/', register_view, name='register'),
     path('login/', login_view, name='login'),
@@ -27,7 +29,7 @@ urlpatterns = [
     path('select-date/', select_date_view, name='select_date'),
     path('select-time-slot/', select_time_slot_view, name='select_time_slot'),
     path('select-court/', select_court_view, name='select_court'),
-    
+    path('admin/', custom_admin_site.urls),
     path('reservas/', agenda_view, name='agenda'),
     path('delete-reservation/<int:reservation_id>/', delete_reservation_view, name='delete_reservation'),
     path('select-date-bbq/', select_date_bbq_view, name='select_date_bbq'),

@@ -36,7 +36,7 @@ def login_view(request):
 
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='login/')
 def home_view(request):
     return render(request, 'home.html')
 
