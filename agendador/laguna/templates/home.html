@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt">
 
@@ -90,7 +91,8 @@
       cursor: not-allowed;
       pointer-events: none;
     }
-  .modal {
+    
+    .modal {
       display: none;
       position: fixed;
       z-index: 1;
@@ -113,9 +115,11 @@
       max-width: 500px;
       text-align: center;
     }
+    
     .h4 {
       color: #ec942c;
     }
+    
     .close-btn {
       color: red; /* Cor vermelha para destacar */
       float: right;
@@ -126,6 +130,56 @@
     .close-btn:hover,
     .close-btn:focus {
       color: darkred; /* Cor mais escura ao passar o mouse */
+      text-decoration: none;
+      cursor: pointer;
+    }
+    
+    /* Estilos para o modal da tabela de preços */
+    .price-modal {
+      display: none;
+      position: fixed;
+      z-index: 2;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.8); /* Fundo mais escuro para destacar a imagem */
+      padding-top: 20px;
+    }
+
+    .price-modal-content-simple {
+      background-color: transparent; /* Sem fundo branco */
+      margin: 0 auto;
+      padding: 10px;
+      max-width: 100%;
+      position: relative;
+      text-align: center;
+    }
+
+    .price-table-image {
+      width: auto;
+      max-width: 95%;
+      max-height: 90vh; /* Limita altura a 90% da altura da tela */
+      margin: 0 auto;
+      display: block;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Sombra sutil na imagem */
+    }
+
+    .close-btn {
+      color: white; /* Cor branca para melhor visibilidade contra o fundo escuro */
+      position: absolute;
+      top: -5px;
+      right: 15px;
+      font-size: 35px;
+      font-weight: bold;
+      z-index: 3;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.7); /* Sombra no texto para maior legibilidade */
+    }
+
+    .close-btn:hover,
+    .close-btn:focus {
+      color: #ff4d4d;
       text-decoration: none;
       cursor: pointer;
     }
@@ -151,6 +205,8 @@
     <a href="{% url 'select_date' %}" class="box">Reservar Quadra</a>
     <a href="{% url 'agenda' %}" class="box">Suas reservas</a>
     <a href="{% url 'select_date_bbq' %}" class="box">Reservar Churrasqueira</a>
+    <!-- Novo botão para visualizar valores das quadras -->
+    <a href="#" onclick="document.getElementById('modalPrecos').style.display='block'" class="box">Valores das Quadras</a>
     <a href="{% url 'logout' %}" class="logout">Sair</a>
   </div>
 
@@ -162,6 +218,14 @@
       <h5>Quadras liberadas com agendamento prévio.</h5>
       <h5>Academia liberada conforme horário de funcionamento.</h5>
       <h5>Uma aula de beach tennis por semana, podendo haver agendamento de mais de um aluno no mesmo horário (aula coletiva).</h5>
+    </div>
+  </div>
+
+  <!-- Modal para exibir valores das quadras (simplificado) -->
+  <div id="modalPrecos" class="price-modal">
+    <div class="price-modal-content-simple">
+      <span class="close-btn" onclick="document.getElementById('modalPrecos').style.display='none'">&times;</span>
+      <img src='{% static "precos_laguna-Photoroom.jpg" %}' alt="Tabela de Preços das Quadras" class="price-table-image">
     </div>
   </div>
 

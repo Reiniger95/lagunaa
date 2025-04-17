@@ -17,7 +17,9 @@ from .views import (
     select_time_slot_view, 
     select_court_view, 
     admin_schedule_view,
-    update_recurring_reservations
+    update_recurring_reservations,
+    bulk_create_reservations,
+    bulk_delete_reservations
 )
 
 
@@ -43,4 +45,6 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     path('update-recurring-reservations/', update_recurring_reservations, name='update_recurring_reservations'),
+    path('admin-schedule/bulk-create/', bulk_create_reservations, name='bulk_create_reservations'),
+    path('admin-schedule/bulk-delete/', bulk_delete_reservations, name='bulk_delete_reservations'),
 ]
