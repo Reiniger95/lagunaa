@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from laguna.admin import custom_admin_site
 from .views import (
     register_view, 
     delete_caixa, 
@@ -16,8 +17,11 @@ from .views import (
     select_time_slot_view, 
     select_court_view, 
     admin_schedule_view,
-    update_recurring_reservations
+    update_recurring_reservations,
+    bulk_create_reservations,
+    bulk_delete_reservations
 )
+
 
 urlpatterns = [
     path('register/', register_view, name='register'),
@@ -27,7 +31,7 @@ urlpatterns = [
     path('select-date/', select_date_view, name='select_date'),
     path('select-time-slot/', select_time_slot_view, name='select_time_slot'),
     path('select-court/', select_court_view, name='select_court'),
-    
+    path('admin/', custom_admin_site.urls),
     path('reservas/', agenda_view, name='agenda'),
     path('delete-reservation/<int:reservation_id>/', delete_reservation_view, name='delete_reservation'),
     path('select-date-bbq/', select_date_bbq_view, name='select_date_bbq'),
@@ -41,4 +45,6 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), name='password_reset_complete'),
     path('update-recurring-reservations/', update_recurring_reservations, name='update_recurring_reservations'),
+    path('admin-schedule/bulk-create/', bulk_create_reservations, name='bulk_create_reservations'),
+    path('admin-schedule/bulk-delete/', bulk_delete_reservations, name='bulk_delete_reservations'),
 ]

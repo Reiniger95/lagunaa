@@ -36,7 +36,7 @@ def login_view(request):
 
 
 
-@login_required(login_url='/login/')
+@login_required(login_url='login/')
 def home_view(request):
     return render(request, 'home.html')
 
@@ -511,3 +511,78 @@ def update_recurring_reservations(request):
         f"As reservas recorrentes foram atualizadas com sucesso! {count_novas} novas reservas foram criadas."
     )
     return redirect(f"{reverse('admin_schedule')}?tab=reservas")
+
+@staff_member_required
+def bulk_create_reservations(request):
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        name = request.POST.get('name')
+        courts = request.POST.getlist('courts[]')
+        times = request.POST.getlist('times[]')
+        
+        try:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            
+            # Criar todas as reservas
+            created_count = 0
+            for i in range(len(courts)):
+                court_name = courts[i]
+                time_str = times[i]
+                
+                court = Court.objects.get(name=court_name)
+                time_obj = datetime.strptime(time_str, '%H:%M').time()
+                
+                # Verificar se já existe
+                if not Reservation.objects.filter(court=court, date=date_obj, time_slot=time_obj).exists():
+                    Reservation.objects.create(
+                        user=request.user,
+                        court=court,
+                        date=date_obj,
+                        time_slot=time_obj,
+                        name=name
+                    )
+                    created_count += 1
+            
+            messages.success(request, f"{created_count} reservas foram criadas com sucesso.")
+        except Exception as e:
+            messages.error(request, f"Erro ao criar reservas: {str(e)}")
+        
+        # Redirecionar de volta para a página de agenda
+        return redirect(f"{reverse('admin_schedule')}?date={date_str}")
+    
+    return redirect('admin_schedule')
+
+@staff_member_required
+def bulk_delete_reservations(request):
+    if request.method == 'POST':
+        date_str = request.POST.get('date')
+        courts = request.POST.getlist('courts[]')
+        times = request.POST.getlist('times[]')
+        
+        try:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            
+            # Excluir todas as reservas
+            deleted_count = 0
+            for i in range(len(courts)):
+                court_name = courts[i]
+                time_str = times[i]
+                
+                court = Court.objects.get(name=court_name)
+                time_obj = datetime.strptime(time_str, '%H:%M').time()
+                
+                # Encontrar e excluir a reserva
+                deleted = Reservation.objects.filter(
+                    court=court, date=date_obj, time_slot=time_obj
+                ).delete()[0]
+                
+                deleted_count += deleted
+            
+            messages.success(request, f"{deleted_count} reservas foram excluídas com sucesso.")
+        except Exception as e:
+            messages.error(request, f"Erro ao excluir reservas: {str(e)}")
+        
+        # Redirecionar de volta para a página de agenda
+        return redirect(f"{reverse('admin_schedule')}?date={date_str}")
+    
+    return redirect('admin_schedule')

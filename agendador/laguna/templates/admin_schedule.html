@@ -156,10 +156,31 @@
 
   <!-- ABA 1: Tabela de quadras para o dia selecionado -->
   <div id="tab-1" class="tab-content active">
-    <table>
+    <div id="bulk-actions" class="mb-3" style="display: none; background-color: #f8f9fa; padding: 15px; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px;">
+      <div class="d-flex align-items-center">
+        <button id="bulk-create" class="btn" style="background-color: #4CAF50; color: white; margin-right: 10px; display: none;">
+          <i class="bi bi-calendar-plus"></i> Marcar Selecionados
+        </button>
+        <button id="bulk-delete" class="btn" style="background-color: #dc3545; color: white; margin-right: 10px; display: none;">
+          <i class="bi bi-calendar-x"></i> Excluir Selecionados
+        </button>
+        <button id="bulk-cancel" class="btn" style="background-color: #6c757d; color: white;">
+          <i class="bi bi-x"></i> Cancelar
+        </button>
+        <div style="margin-left: 15px; color: #666;">
+          <span id="selected-count">0</span> itens selecionados
+        </div>
+      </div>
+    </div>
+
+    <!-- Estrutura de tabela corrigida -->
+    <table class="table table-bordered agenda-table">
       <thead>
         <tr>
-          <th>Hora</th>
+          <th style="width: 40px;">
+            <input type="checkbox" id="select-all" style="margin: 0;">
+          </th>
+          <th style="width: 80px;">Hora</th>
           {% for court in courts %}
           <th>{{ court.name }}</th>
           {% endfor %}
@@ -168,28 +189,53 @@
       <tbody>
         {% for row in schedule_rows %}
         <tr>
-          <td>{{ row.hour }}:00</td>
+          <td style="text-align: center; vertical-align: middle;">
+            <!-- Coluna de checkbox principal da linha -->
+            <!-- Esta coluna ficará vazia, já que os checkboxes estarão dentro de cada slot -->
+          </td>
+          <td style="text-align: center; vertical-align: middle;">
+            {{ row.hour }}:00
+          </td>
           {% for slot in row.slots %}
-          <td class="{% if slot.reservation %}reserved{% endif %}">
-            {% if slot.reservation %}
-            {{ slot.reservation.name|default:slot.reservation.user.full_name }}
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="court" value="{{ slot.court.name }}">
-              <input type="hidden" name="time_slot" value="{{ row.hour }}:00">
-              <input type="hidden" name="action" value="delete">
-              <button type="submit">Excluir</button>
-            </form>
-            {% else %}
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="court" value="{{ slot.court.name }}">
-              <input type="hidden" name="time_slot" value="{{ row.hour }}:00">
-              <input type="text" name="name" placeholder="Nome ou Lembrete">
-              <input type="hidden" name="action" value="create">
-              <button type="submit">Marcar</button>
-            </form>
-            {% endif %}
+          <td class="{% if slot.reservation %}reserved{% endif %}" style="padding: 5px; position: relative;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <!-- Checkbox -->
+              <input class="slot-checkbox" type="checkbox" 
+                     data-court="{{ slot.court.name }}" 
+                     data-time="{{ row.hour }}:00" 
+                     data-reserved="{% if slot.reservation %}true{% else %}false{% endif %}"
+                     style="margin: 0;">
+              
+              <!-- Conteúdo da célula -->
+              <div style="flex-grow: 1; text-align: center;">
+                {% if slot.reservation %}
+                  <span>{{ slot.reservation.name|default:slot.reservation.user.full_name }}</span>
+                  
+                  <!-- Botão de exclusão individual -->
+                  <form method="post" class="single-action" style="display: inline-block; margin-left: 10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="court" value="{{ slot.court.name }}">
+                    <input type="hidden" name="time_slot" value="{{ row.hour }}:00">
+                    <input type="hidden" name="action" value="delete">
+                    <button type="submit" class="btn btn-sm" style="background-color: #ff4d4d; color: white; padding: 2px 8px; border: none;">
+                      <small>×</small>
+                    </button>
+                  </form>
+                {% else %}
+                  <!-- Formulário de marcação individual -->
+                  <form method="post" class="single-action" style="display: inline-flex; align-items: center;">
+                    {% csrf_token %}
+                    <input type="hidden" name="court" value="{{ slot.court.name }}">
+                    <input type="hidden" name="time_slot" value="{{ row.hour }}:00">
+                    <input type="text" name="name" placeholder="Nome" style="width: 100px; margin-right: 5px; padding: 3px 5px;">
+                    <input type="hidden" name="action" value="create">
+                    <button type="submit" class="btn btn-sm" style="background-color: #4CAF50; color: white; padding: 2px 8px; border: none;">
+                      <small>+</small>
+                    </button>
+                  </form>
+                {% endif %}
+              </div>
+            </div>
           </td>
           {% endfor %}
         </tr>
@@ -197,6 +243,67 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Modal para criação em massa (simplificado) -->
+<div id="bulkCreateModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div style="background-color: white; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 50%; border-radius: 5px;">
+    <form method="POST" action="{% url 'bulk_create_reservations' %}">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0;">Criar Múltiplas Reservas</h3>
+        <span id="closeCreateModal" style="cursor: pointer; font-size: 24px;">&times;</span>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="bulk-name" style="display: block; margin-bottom: 5px;">Nome para todas as reservas:</label>
+        <input type="text" id="bulk-name" name="name" required style="width: 100%; padding: 8px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Horários selecionados:</label>
+        <ul id="bulk-slots-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px;">
+          <!-- Será preenchido via JavaScript -->
+        </ul>
+      </div>
+      
+      <div id="bulk-slots-inputs">
+        <!-- Será preenchido via JavaScript -->
+      </div>
+      
+      <div style="text-align: right; margin-top: 20px;">
+        <button type="button" id="cancelCreateModal" style="background-color: #6c757d; color: white; border: none; padding: 8px 15px; margin-right: 10px; cursor: pointer;">Cancelar</button>
+        <button type="submit" style="background-color: #4CAF50; color: white; border: none; padding: 8px 15px; cursor: pointer;">Criar Reservas</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para confirmação de exclusão em massa (simplificado) -->
+<div id="bulkDeleteModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+  <div style="background-color: white; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 40%; border-radius: 5px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h3 style="margin: 0; color: #dc3545;">Confirmar Exclusão</h3>
+      <span id="closeDeleteModal" style="cursor: pointer; font-size: 24px;">&times;</span>
+    </div>
+    
+    <p id="delete-confirmation-text">Tem certeza que deseja excluir as reservas selecionadas?</p>
+    
+    <form method="POST" action="{% url 'bulk_delete_reservations' %}">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+      <div id="delete-slots-inputs">
+        <!-- Será preenchido via JavaScript -->
+      </div>
+      
+      <div style="text-align: right; margin-top: 20px;">
+        <button type="button" id="cancelDeleteModal" style="background-color: #6c757d; color: white; border: none; padding: 8px 15px; margin-right: 10px; cursor: pointer;">Cancelar</button>
+        <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 8px 15px; cursor: pointer;">Confirmar Exclusão</button>
+      </div>
+    </form>
+  </div>
+</div>
 
   <!-- ABA 2: Lista de todas as reservas -->
 <div id="tab-2" class="tab-content">
@@ -477,6 +584,238 @@
         location.reload();
       }, 190000);
   </script>
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectAll = document.getElementById('select-all');
+  const slotCheckboxes = document.querySelectorAll('.slot-checkbox');
+  const bulkActions = document.getElementById('bulk-actions');
+  const bulkCreate = document.getElementById('bulk-create');
+  const bulkDelete = document.getElementById('bulk-delete');
+  const bulkCancel = document.getElementById('bulk-cancel');
+  const selectedCount = document.getElementById('selected-count');
+  
+  // Modais e seus controles
+  const bulkCreateModal = document.getElementById('bulkCreateModal');
+  const bulkDeleteModal = document.getElementById('bulkDeleteModal');
+  const closeCreateModal = document.getElementById('closeCreateModal');
+  const closeDeleteModal = document.getElementById('closeDeleteModal');
+  const cancelCreateModal = document.getElementById('cancelCreateModal');
+  const cancelDeleteModal = document.getElementById('cancelDeleteModal');
+  
+  let actionMode = null; // 'create' ou 'delete'
+  let selectedSlots = new Map(); // Mapa de slots selecionados com informações completas
+  
+  // Gerenciar seleção de slots
+  slotCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+      const court = this.dataset.court;
+      const time = this.dataset.time;
+      const isReserved = this.dataset.reserved === 'true';
+      const key = `${court}-${time}`;
+      
+      if (this.checked) {
+        // Primeiro checkbox marcado define o modo
+        if (selectedSlots.size === 0) {
+          actionMode = isReserved ? 'delete' : 'create';
+          
+          bulkCreate.style.display = actionMode === 'create' ? 'inline-block' : 'none';
+          bulkDelete.style.display = actionMode === 'delete' ? 'inline-block' : 'none';
+        } else {
+          // Verificar compatibilidade com o modo atual
+          if ((actionMode === 'create' && isReserved) || 
+              (actionMode === 'delete' && !isReserved)) {
+            alert('Não é possível misturar slots vazios e ocupados na mesma operação');
+            this.checked = false;
+            return;
+          }
+        }
+        
+        selectedSlots.set(key, {
+          court: court,
+          time: time,
+          isReserved: isReserved
+        });
+      } else {
+        selectedSlots.delete(key);
+        
+        // Se não houver mais slots selecionados, redefina o modo
+        if (selectedSlots.size === 0) {
+          actionMode = null;
+          bulkCreate.style.display = 'none';
+          bulkDelete.style.display = 'none';
+        }
+      }
+      
+      // Atualizar contagem e visibilidade da barra de ações
+      selectedCount.textContent = selectedSlots.size;
+      bulkActions.style.display = selectedSlots.size > 0 ? 'block' : 'none';
+    });
+  });
+  
+  // Select/Deselect All
+  selectAll.addEventListener('change', function() {
+    const isChecked = this.checked;
+    
+    if (isChecked) {
+      // Ao marcar "select all", precisamos determinar o modo primeiro
+      const checkboxes = Array.from(slotCheckboxes);
+      const availableSlots = checkboxes.filter(cb => cb.dataset.reserved === 'false');
+      const reservedSlots = checkboxes.filter(cb => cb.dataset.reserved === 'true');
+      
+      if (availableSlots.length > 0 && reservedSlots.length === 0) {
+        actionMode = 'create';
+      } else if (availableSlots.length === 0 && reservedSlots.length > 0) {
+        actionMode = 'delete';
+      } else {
+        // Há ambos os tipos, então não podemos selecionar tudo
+        alert('Não é possível selecionar tudo quando há slots vazios e ocupados');
+        this.checked = false;
+        return;
+      }
+    } else {
+      // Ao desmarcar "select all", redefina tudo
+      actionMode = null;
+      selectedSlots.clear();
+      bulkCreate.style.display = 'none';
+      bulkDelete.style.display = 'none';
+    }
+    
+    // Marque apenas os checkboxes apropriados para o modo atual
+    slotCheckboxes.forEach(checkbox => {
+      const isReserved = checkbox.dataset.reserved === 'true';
+      const court = checkbox.dataset.court;
+      const time = checkbox.dataset.time;
+      const key = `${court}-${time}`;
+      
+      // Só marca se for compatível com o modo atual
+      if ((actionMode === 'create' && !isReserved) || 
+          (actionMode === 'delete' && isReserved)) {
+        checkbox.checked = isChecked;
+        
+        if (isChecked) {
+          selectedSlots.set(key, {
+            court: court,
+            time: time,
+            isReserved: isReserved
+          });
+        } else {
+          selectedSlots.delete(key);
+        }
+      } else {
+        checkbox.checked = false;
+      }
+    });
+    
+    // Atualizar contagem e visibilidade
+    selectedCount.textContent = selectedSlots.size;
+    bulkActions.style.display = selectedSlots.size > 0 ? 'block' : 'none';
+    bulkCreate.style.display = actionMode === 'create' ? 'inline-block' : 'none';
+    bulkDelete.style.display = actionMode === 'delete' ? 'inline-block' : 'none';
+  });
+  
+  // Cancelar todas as seleções
+  bulkCancel.addEventListener('click', function() {
+    selectAll.checked = false;
+    slotCheckboxes.forEach(checkbox => {
+      checkbox.checked = false;
+    });
+    
+    selectedSlots.clear();
+    actionMode = null;
+    bulkActions.style.display = 'none';
+    selectedCount.textContent = '0';
+  });
+  
+  // Modal de criação em massa
+  bulkCreate.addEventListener('click', function() {
+    if (selectedSlots.size === 0) return;
+    
+    const slotsList = document.getElementById('bulk-slots-list');
+    const inputsContainer = document.getElementById('bulk-slots-inputs');
+    
+    slotsList.innerHTML = '';
+    inputsContainer.innerHTML = '';
+    
+    selectedSlots.forEach((slot, key) => {
+      // Adicionar à lista visual
+      const li = document.createElement('li');
+      li.textContent = `${slot.court} às ${slot.time}`;
+      slotsList.appendChild(li);
+      
+      // Adicionar campos ocultos ao formulário
+      const courtInput = document.createElement('input');
+      courtInput.type = 'hidden';
+      courtInput.name = 'courts[]';
+      courtInput.value = slot.court;
+      inputsContainer.appendChild(courtInput);
+      
+      const timeInput = document.createElement('input');
+      timeInput.type = 'hidden';
+      timeInput.name = 'times[]';
+      timeInput.value = slot.time;
+      inputsContainer.appendChild(timeInput);
+    });
+    
+    bulkCreateModal.style.display = 'block';
+  });
+  
+  // Modal de exclusão em massa
+  bulkDelete.addEventListener('click', function() {
+    if (selectedSlots.size === 0) return;
+    
+    const inputsContainer = document.getElementById('delete-slots-inputs');
+    const confirmText = document.getElementById('delete-confirmation-text');
+    
+    inputsContainer.innerHTML = '';
+    confirmText.textContent = `Tem certeza que deseja excluir ${selectedSlots.size} reservas?`;
+    
+    selectedSlots.forEach((slot, key) => {
+      // Adicionar campos ocultos ao formulário
+      const courtInput = document.createElement('input');
+      courtInput.type = 'hidden';
+      courtInput.name = 'courts[]';
+      courtInput.value = slot.court;
+      inputsContainer.appendChild(courtInput);
+      
+      const timeInput = document.createElement('input');
+      timeInput.type = 'hidden';
+      timeInput.name = 'times[]';
+      timeInput.value = slot.time;
+      inputsContainer.appendChild(timeInput);
+    });
+    
+    bulkDeleteModal.style.display = 'block';
+  });
+  
+  // Controles dos modais
+  closeCreateModal.addEventListener('click', () => bulkCreateModal.style.display = 'none');
+  cancelCreateModal.addEventListener('click', () => bulkCreateModal.style.display = 'none');
+  closeDeleteModal.addEventListener('click', () => bulkDeleteModal.style.display = 'none');
+  cancelDeleteModal.addEventListener('click', () => bulkDeleteModal.style.display = 'none');
+  
+  // Configurar formulários para envio
+  document.getElementById('bulkCreateForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    this.action = "{% url 'bulk_create_reservations' %}";
+    this.submit();
+  });
+  
+  document.getElementById('bulkDeleteForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    this.action = "{% url 'bulk_delete_reservations' %}";
+    this.submit();
+  });
+  
+  // Fechar modais ao clicar fora deles
+  window.addEventListener('click', function(event) {
+    if (event.target === bulkCreateModal) {
+      bulkCreateModal.style.display = 'none';
+    } else if (event.target === bulkDeleteModal) {
+      bulkDeleteModal.style.display = 'none';
+    }
+  });
+});
+</script>
 </body>
 
 </html>
