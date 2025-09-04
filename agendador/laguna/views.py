@@ -94,7 +94,7 @@ def select_time_slot_view(request):
     if day_of_week == 5:  # Sábado
         valid_times = ["09:00", "10:00", "11:00", "12:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"]
     elif day_of_week == 6:  # Domingo
-        valid_times = ["09:00", "10:00", "11:00", "12:00", "13:00"]
+        valid_times = ["10:00", "11:00", "15:00", "16:00"]
     else:  # Segunda a Sexta
         valid_times = [time for time in all_times if time >= "09:00" and time <= "21:00"]
 
